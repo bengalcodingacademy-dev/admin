@@ -6,14 +6,15 @@ import PasswordInput from '../components/PasswordInput';
 
 export default function Login() {
   const { login } = useAuth();
-  const [username, setUsername] = useState('');
+  const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [error, setError] = useState('');
   const navigate = useNavigate();
   const submit = async (e) => {
     e.preventDefault(); setError('');
     try {
-      const r = await api.post('/auth/admin/login', { username, password });
+      const r = await api.post('/auth/login', { email, password });
+      if (r.data.user.role !== 'ADMIN') throw new Error('Not an admin');
       login(r.data);
       navigate('/');
     } catch (e) { setError(e?.response?.data?.error || e.message || 'Login failed'); }
@@ -33,9 +34,9 @@ export default function Login() {
         <div>
           <input 
             className="w-full px-4 py-3 rounded-xl bg-black/50 border border-white/10 text-white placeholder-white/50 text-sm md:text-base focus:outline-none focus:ring-2 focus:ring-bca-gold/50 focus:border-bca-gold/50 transition-all duration-200" 
-            placeholder="Username" 
-            value={username} 
-            onChange={e=>setUsername(e.target.value)} 
+            placeholder="Email" 
+            value={email} 
+            onChange={e=>setEmail(e.target.value)} 
           />
         </div>
         <div>

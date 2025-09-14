@@ -14,7 +14,11 @@ export function AuthProvider({ children, navigate }) {
 
   const checkAuthStatus = async () => {
     try {
-      const response = await api.get('/auth/admin/me');
+      const response = await api.get('/me/summary');
+      if (response.data.role !== 'ADMIN') {
+        setUser(null);
+        return;
+      }
       setUser(response.data);
     } catch (error) {
       // User not authenticated, clear any stale state
