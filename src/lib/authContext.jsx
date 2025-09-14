@@ -14,7 +14,7 @@ export function AuthProvider({ children, navigate }) {
 
   const checkAuthStatus = async () => {
     try {
-      const response = await api.get('/me/summary');
+      const response = await api.get('/auth/admin/me');
       setUser(response.data);
     } catch (error) {
       // User not authenticated, clear any stale state
