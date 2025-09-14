@@ -12,27 +12,29 @@ const AdminCard = ({ to, title, description, icon, color = 'gold' }) => {
     <motion.div
       whileHover={{ scale: 1.05, y: -5 }}
       whileTap={{ scale: 0.95 }}
-      className={`group relative overflow-hidden rounded-2xl border-2 ${colorClasses[color]} bg-bca-gray-800/50 backdrop-blur-sm p-6 transition-all duration-300 hover:bg-bca-gray-800/70`}
+      className={`group relative overflow-hidden rounded-2xl border-2 ${colorClasses[color]} bg-bca-gray-800/50 backdrop-blur-sm p-4 md:p-6 transition-all duration-300 hover:bg-bca-gray-800/70`}
     >
       <div className="absolute inset-0 bg-gradient-to-br from-transparent via-transparent to-white/5 opacity-0 group-hover:opacity-100 transition-opacity duration-300"></div>
       <div className="relative z-10">
-        <div className="flex items-center gap-4 mb-4">
-          <div className={`p-3 rounded-xl bg-${color === 'gold' ? 'bca-gold' : color === 'cyan' ? 'bca-cyan' : 'bca-red'}/20`}>
-            {icon}
+        <div className="flex items-center gap-3 md:gap-4 mb-3 md:mb-4">
+          <div className={`p-2 md:p-3 rounded-xl bg-${color === 'gold' ? 'bca-gold' : color === 'cyan' ? 'bca-cyan' : 'bca-red'}/20`}>
+            <div className="w-4 h-4 md:w-6 md:h-6">
+              {icon}
+            </div>
           </div>
-          <h3 className="text-xl font-bold text-white group-hover:text-bca-gold transition-colors">
+          <h3 className="text-base md:text-xl font-bold text-white group-hover:text-bca-gold transition-colors">
             {title}
           </h3>
         </div>
-        <p className="text-bca-gray-300 mb-4 text-sm leading-relaxed">
+        <p className="text-bca-gray-300 mb-3 md:mb-4 text-xs md:text-sm leading-relaxed">
           {description}
         </p>
         <Link 
           to={to}
-          className={`inline-flex items-center gap-2 px-4 py-2 rounded-lg bg-${color === 'gold' ? 'bca-gold' : color === 'cyan' ? 'bca-cyan' : 'bca-red'}/20 text-${color === 'gold' ? 'bca-gold' : color === 'cyan' ? 'bca-cyan' : 'bca-red'} hover:bg-${color === 'gold' ? 'bca-gold' : color === 'cyan' ? 'bca-cyan' : 'bca-red'}/30 transition-all duration-200 font-medium`}
+          className={`inline-flex items-center gap-2 px-3 md:px-4 py-2 rounded-lg bg-${color === 'gold' ? 'bca-gold' : color === 'cyan' ? 'bca-cyan' : 'bca-red'}/20 text-${color === 'gold' ? 'bca-gold' : color === 'cyan' ? 'bca-cyan' : 'bca-red'} hover:bg-${color === 'gold' ? 'bca-gold' : color === 'cyan' ? 'bca-cyan' : 'bca-red'}/30 transition-all duration-200 font-medium text-xs md:text-sm`}
         >
           Manage
-          <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <svg className="w-3 h-3 md:w-4 md:h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
           </svg>
         </Link>
@@ -135,17 +137,17 @@ export default function AdminLanding() {
 
   return (
     <div className="min-h-screen bg-bca-black text-white">
-      <div className="max-w-7xl mx-auto px-4 py-12">
+      <div className="max-w-7xl mx-auto px-4 py-8 md:py-12">
         <motion.div
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.6 }}
-          className="text-center mb-12"
+          className="text-center mb-8 md:mb-12"
         >
-          <h1 className="text-4xl md:text-5xl font-bold mb-4 bg-gradient-to-r from-bca-gold via-bca-cyan to-bca-gold bg-clip-text text-transparent">
+          <h1 className="text-2xl sm:text-3xl md:text-4xl lg:text-5xl font-bold mb-4 bg-gradient-to-r from-bca-gold via-bca-cyan to-bca-gold bg-clip-text text-transparent">
             BCA Admin Panel
           </h1>
-          <p className="text-bca-gray-300 text-lg max-w-2xl mx-auto">
+          <p className="text-bca-gray-300 text-sm md:text-lg max-w-2xl mx-auto">
             Manage your coding academy with powerful tools and analytics
           </p>
         </motion.div>
@@ -154,7 +156,7 @@ export default function AdminLanding() {
           initial={{ opacity: 0 }}
           animate={{ opacity: 1 }}
           transition={{ duration: 0.8, delay: 0.2 }}
-          className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6"
+          className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4 md:gap-6"
         >
           {cards.map((card, index) => (
             <motion.div
