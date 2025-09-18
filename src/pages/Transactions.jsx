@@ -3,14 +3,14 @@ import { motion } from 'framer-motion';
 import { api } from '../lib/api';
 
 export default function Transactions() {
-  const [pending, setPending] = useState([]);
+  const [payments, setPayments] = useState([]);
   const [loading, setLoading] = useState(true);
   
   const load = async () => {
     try {
       setLoading(true);
       const response = await api.get('/admin/purchases');
-      setPending(response.data.filter(p => p.status === 'PENDING'));
+      setPayments(response.data);
     } catch (error) {
       console.error('Error loading transactions:', error);
     } finally {
@@ -26,6 +26,7 @@ export default function Transactions() {
       load(); 
     } catch (error) {
       console.error('Error approving payment:', error);
+      alert(error.response?.data?.error || 'Failed to approve payment');
     }
   };
   
@@ -35,6 +36,7 @@ export default function Transactions() {
       load(); 
     } catch (error) {
       console.error('Error declining payment:', error);
+      alert(error.response?.data?.error || 'Failed to decline payment');
     }
   };
 
@@ -50,23 +52,29 @@ export default function Transactions() {
     <div className="max-w-6xl mx-auto px-4 py-10">
       <div className="mb-8">
         <h1 className="text-3xl font-bold text-white mb-2">Payment Management</h1>
-        <p className="text-white/60">Review and approve pending payments</p>
+        <p className="text-white/60">Review and manage all payment requests</p>
       </div>
 
-      {pending.length === 0 ? (
+      {payments.length === 0 ? (
         <div className="text-center py-12">
-          <div className="text-white/60 text-lg">No pending transactions</div>
-          <div className="text-white/40 text-sm mt-2">All payments have been processed</div>
+          <div className="text-white/60 text-lg">No transactions found</div>
+          <div className="text-white/40 text-sm mt-2">No payments have been submitted yet</div>
         </div>
       ) : (
         <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
-          {pending.map((payment, index) => (
+          {payments.map((payment, index) => (
             <motion.div
               key={payment.id}
               initial={{ opacity: 0, y: 20 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ delay: index * 0.1 }}
-              className="bg-gradient-to-br from-bca-gray-800/80 to-bca-gray-900/80 rounded-xl p-6 border border-bca-gray-700/50 hover:border-bca-gold/50 transition-all duration-300 group relative overflow-hidden backdrop-blur-sm"
+              className={`bg-gradient-to-br from-bca-gray-800/80 to-bca-gray-900/80 rounded-xl p-6 border transition-all duration-300 group relative overflow-hidden backdrop-blur-sm ${
+                payment.status === 'PAID' 
+                  ? 'border-green-500/50 hover:border-green-400/50' 
+                  : payment.status === 'DECLINED'
+                  ? 'border-red-500/50 hover:border-red-400/50'
+                  : 'border-bca-gray-700/50 hover:border-bca-gold/50'
+              }`}
             >
               <div className="absolute inset-0 bg-gradient-to-br from-bca-gold/5 to-yellow-500/5 opacity-0 group-hover:opacity-100 transition-opacity duration-300"></div>
               <div className="relative z-10">
@@ -78,13 +86,26 @@ export default function Transactions() {
                     </h3>
                     <p className="text-sm text-bca-gray-300">{payment.user.email}</p>
                   </div>
-                  <span className={`px-3 py-1 rounded-full text-xs font-medium ${
-                    payment.isMonthlyPayment 
-                      ? 'bg-blue-500/20 text-blue-400' 
-                      : 'bg-green-500/20 text-green-400'
-                  }`}>
-                    {payment.isMonthlyPayment ? 'Monthly' : 'One-time'}
-                  </span>
+                  <div className="flex flex-col gap-2">
+                    <span className={`px-3 py-1 rounded-full text-xs font-medium ${
+                      payment.isMonthlyPayment 
+                        ? 'bg-blue-500/20 text-blue-400' 
+                        : 'bg-green-500/20 text-green-400'
+                    }`}>
+                      {payment.isMonthlyPayment ? 'Monthly' : 'One-time'}
+                    </span>
+                    <span className={`px-3 py-1 rounded-full text-xs font-medium ${
+                      payment.status === 'PAID' 
+                        ? 'bg-green-500/20 text-green-400' 
+                        : payment.status === 'DECLINED'
+                        ? 'bg-red-500/20 text-red-400'
+                        : 'bg-yellow-500/20 text-yellow-400'
+                    }`}>
+                      {payment.status === 'PAID' ? 'Approved' : 
+                       payment.status === 'DECLINED' ? 'Declined' : 
+                       'Pending'}
+                    </span>
+                  </div>
                 </div>
 
                 {/* Course Info */}
@@ -124,20 +145,28 @@ export default function Transactions() {
 
                 {/* Actions */}
                 <div className="flex gap-3">
-                  <button
-                    onClick={() => approve(payment.id)}
-                    className="flex-1 px-4 py-2 rounded-lg bg-gradient-to-r from-green-500 to-emerald-500 text-white font-medium hover:from-green-400 hover:to-emerald-400 transition-all duration-300 shadow-lg"
-                    style={{ boxShadow: '0 0 20px rgba(34,197,94,0.3)' }}
-                  >
-                    Approve
-                  </button>
-                  <button
-                    onClick={() => decline(payment.id)}
-                    className="flex-1 px-4 py-2 rounded-lg bg-gradient-to-r from-red-500 to-rose-500 text-white font-medium hover:from-red-400 hover:to-rose-400 transition-all duration-300 shadow-lg"
-                    style={{ boxShadow: '0 0 20px rgba(239,68,68,0.3)' }}
-                  >
-                    Decline
-                  </button>
+                  {payment.status === 'PENDING' ? (
+                    <>
+                      <button
+                        onClick={() => approve(payment.id)}
+                        className="flex-1 px-4 py-2 rounded-lg bg-gradient-to-r from-green-500 to-emerald-500 text-white font-medium hover:from-green-400 hover:to-emerald-400 transition-all duration-300 shadow-lg"
+                        style={{ boxShadow: '0 0 20px rgba(34,197,94,0.3)' }}
+                      >
+                        Approve
+                      </button>
+                      <button
+                        onClick={() => decline(payment.id)}
+                        className="flex-1 px-4 py-2 rounded-lg bg-gradient-to-r from-red-500 to-rose-500 text-white font-medium hover:from-red-400 hover:to-rose-400 transition-all duration-300 shadow-lg"
+                        style={{ boxShadow: '0 0 20px rgba(239,68,68,0.3)' }}
+                      >
+                        Decline
+                      </button>
+                    </>
+                  ) : (
+                    <div className="flex-1 px-4 py-2 rounded-lg bg-bca-gray-600 text-bca-gray-300 font-medium text-center">
+                      {payment.status === 'PAID' ? 'Payment Approved' : 'Payment Declined'}
+                    </div>
+                  )}
                 </div>
               </div>
             </motion.div>

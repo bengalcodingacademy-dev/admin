@@ -160,10 +160,24 @@ export default function Courses() {
         setIsCreating(false);
         return;
       }
-      if (form.priceCents <= 0) {
-        setError('Price must be greater than 0');
-        setIsCreating(false);
-        return;
+      // Validate pricing based on payment type
+      if (form.isMonthlyPayment) {
+        if (form.monthlyFeeCents <= 0) {
+          setError('Monthly fee must be greater than 0');
+          setIsCreating(false);
+          return;
+        }
+        if (form.durationMonths <= 0) {
+          setError('Duration must be at least 1 month');
+          setIsCreating(false);
+          return;
+        }
+      } else {
+        if (form.priceCents <= 0) {
+          setError('Price must be greater than 0');
+          setIsCreating(false);
+          return;
+        }
       }
       
       let imageUrl = form.imageUrl;
@@ -651,7 +665,7 @@ export default function Courses() {
               className="mb-8"
             >
               <h2 className="text-2xl font-bold text-white mb-4">About Course</h2>
-              <div className="bg-bca-gray-800 rounded-lg">
+              <div className="bg-bca-gray-800 rounded-lg ck-editor-dark">
                 <CKEditor
                   editor={ClassicEditor}
                   data={form.aboutCourse}
@@ -663,6 +677,36 @@ export default function Courses() {
                   config={{
                     toolbar: ['heading', '|', 'bold', 'italic', 'link', 'bulletedList', 'numberedList', '|', 'outdent', 'indent', '|', 'blockQuote', 'insertTable', 'undo', 'redo'],
                     placeholder: 'Enter detailed course description...'
+                  }}
+                  onReady={(editor) => {
+                    // Ensure black text color in editor content
+                    const editorElement = editor.ui.getEditableElement();
+                    
+                    if (editorElement) {
+                      // Set text color to black
+                      editorElement.style.color = '#000000';
+                      
+                      // Apply black text to all text elements
+                      const textElements = editorElement.querySelectorAll('p, div, span, h1, h2, h3, h4, h5, h6, li, td, th');
+                      textElements.forEach(el => {
+                        el.style.color = '#000000';
+                      });
+                      
+                      // Set up observer to apply black text to new content
+                      const observer = new MutationObserver(() => {
+                        const newTextElements = editorElement.querySelectorAll('p, div, span, h1, h2, h3, h4, h5, h6, li, td, th');
+                        newTextElements.forEach(el => {
+                          if (el.style.color !== '#000000') {
+                            el.style.color = '#000000';
+                          }
+                        });
+                      });
+                      
+                      observer.observe(editorElement, {
+                        childList: true,
+                        subtree: true
+                      });
+                    }
                   }}
                 />
               </div>
@@ -678,7 +722,7 @@ export default function Courses() {
               <h2 className="text-2xl font-bold text-white mb-4">
                 Long Description <span className="text-red-400">*</span>
               </h2>
-              <div className="bg-bca-gray-800 rounded-lg">
+              <div className="bg-bca-gray-800 rounded-lg ck-editor-dark">
                 <CKEditor
                   editor={ClassicEditor}
                   data={form.longDesc}
@@ -690,6 +734,36 @@ export default function Courses() {
                   config={{
                     toolbar: ['heading', '|', 'bold', 'italic', 'link', 'bulletedList', 'numberedList', '|', 'outdent', 'indent', '|', 'blockQuote', 'insertTable', 'undo', 'redo'],
                     placeholder: 'Enter detailed course content...'
+                  }}
+                  onReady={(editor) => {
+                    // Ensure black text color in editor content
+                    const editorElement = editor.ui.getEditableElement();
+                    
+                    if (editorElement) {
+                      // Set text color to black
+                      editorElement.style.color = '#000000';
+                      
+                      // Apply black text to all text elements
+                      const textElements = editorElement.querySelectorAll('p, div, span, h1, h2, h3, h4, h5, h6, li, td, th');
+                      textElements.forEach(el => {
+                        el.style.color = '#000000';
+                      });
+                      
+                      // Set up observer to apply black text to new content
+                      const observer = new MutationObserver(() => {
+                        const newTextElements = editorElement.querySelectorAll('p, div, span, h1, h2, h3, h4, h5, h6, li, td, th');
+                        newTextElements.forEach(el => {
+                          if (el.style.color !== '#000000') {
+                            el.style.color = '#000000';
+                          }
+                        });
+                      });
+                      
+                      observer.observe(editorElement, {
+                        childList: true,
+                        subtree: true
+                      });
+                    }
                   }}
                 />
               </div>
@@ -915,7 +989,7 @@ export default function Courses() {
                         </button>
                       </div>
                       
-                      <div className="bg-bca-gray-700 rounded-lg">
+                      <div className="bg-bca-gray-700 rounded-lg ck-editor-dark">
                         <CKEditor
                           editor={ClassicEditor}
                           data={module.content}
@@ -926,6 +1000,22 @@ export default function Courses() {
                           config={{
                             toolbar: ['heading', '|', 'bold', 'italic', 'link', 'bulletedList', 'numberedList', '|', 'outdent', 'indent', '|', 'blockQuote', 'insertTable', 'undo', 'redo'],
                             placeholder: 'Enter module content...'
+                          }}
+                          onReady={(editor) => {
+                            // Apply dark theme styling
+                            const editorElement = editor.ui.getEditableElement();
+                            const toolbarElement = editor.ui.view.toolbar.element;
+                            
+                            if (editorElement) {
+                              editorElement.style.backgroundColor = '#1f2937';
+                              editorElement.style.color = '#f9fafb';
+                              editorElement.style.border = '1px solid #374151';
+                            }
+                            
+                            if (toolbarElement) {
+                              toolbarElement.style.backgroundColor = '#374151';
+                              toolbarElement.style.borderBottom = '1px solid #4b5563';
+                            }
                           }}
                         />
                       </div>
@@ -988,26 +1078,37 @@ export default function Courses() {
                       />
                     </div>
                     
-                    <div>
-                      <label className="block text-sm font-medium text-bca-gray-300 mb-2">
-                        Price (₹) <span className="text-red-400">*</span>
-                      </label>
-                      <input
-                        type="number"
-                        placeholder="0"
-                        className="w-full px-3 py-2 rounded-lg bg-bca-gray-700 border border-bca-gray-600 text-white focus:outline-none focus:border-bca-gold"
-                        value={form.priceCents}
-                        onChange={e=>{
-                          setForm(f=>({...f,priceCents: Number(e.target.value||0)}));
-                          clearError();
-                        }}
-                      />
-                    </div>
+                    {!form.isMonthlyPayment && (
+                      <div>
+                        <label className="block text-sm font-medium text-bca-gray-300 mb-2">
+                          Price (₹) <span className="text-red-400">*</span>
+                        </label>
+                        <input
+                          type="number"
+                          placeholder="0"
+                          className="w-full px-3 py-2 rounded-lg bg-bca-gray-700 border border-bca-gray-600 text-white focus:outline-none focus:border-bca-gold"
+                          value={form.priceCents}
+                          onChange={e=>{
+                            setForm(f=>({...f,priceCents: Number(e.target.value||0)}));
+                            clearError();
+                          }}
+                        />
+                      </div>
+                    )}
                     
                     {/* Monthly Payment Fields */}
                     <div className="col-span-2">
                       <div className="bg-bca-gray-800 rounded-lg p-4 border border-bca-gray-700">
-                        <h3 className="text-lg font-semibold text-white mb-4">Monthly Payment Settings</h3>
+                        <h3 className="text-lg font-semibold text-white mb-4">Payment Settings</h3>
+                        <div className="mb-4 p-3 bg-bca-gray-700 rounded-lg">
+                          <p className="text-bca-gray-300 text-sm">
+                            {form.isMonthlyPayment ? (
+                              <span className="text-bca-gold">💰 Monthly Payment Mode</span>
+                            ) : (
+                              <span className="text-bca-gold">💳 Single Payment Mode</span>
+                            )}
+                          </p>
+                        </div>
                         <div className="grid md:grid-cols-3 gap-4">
                           <div>
                             <label className="block text-sm font-medium text-bca-gray-300 mb-2">
@@ -1015,7 +1116,18 @@ export default function Courses() {
                                 type="checkbox"
                                 className="mr-2"
                                 checked={form.isMonthlyPayment}
-                                onChange={e=>setForm(f=>({...f,isMonthlyPayment: e.target.checked}))}
+                                onChange={e=>{
+                                  const isMonthly = e.target.checked;
+                                  setForm(f=>({
+                                    ...f,
+                                    isMonthlyPayment: isMonthly,
+                                    // Clear the opposite price field when switching
+                                    priceCents: isMonthly ? 0 : f.priceCents,
+                                    monthlyFeeCents: isMonthly ? f.monthlyFeeCents : 0,
+                                    durationMonths: isMonthly ? f.durationMonths : 0
+                                  }));
+                                  clearError();
+                                }}
                               />
                               Enable Monthly Payment
                             </label>
