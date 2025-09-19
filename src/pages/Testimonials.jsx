@@ -14,6 +14,8 @@ export default function Testimonials() {
     comment: '',
     rating: 5
   });
+  const [imageFile, setImageFile] = useState(null);
+  const [uploading, setUploading] = useState(false);
 
   useEffect(() => {
     fetchTestimonials();
@@ -31,17 +33,59 @@ export default function Testimonials() {
     }
   };
 
+  const uploadImage = async (file) => {
+    if (!file) return null;
+    
+    try {
+      setUploading(true);
+      const key = `testimonials/${Date.now()}-${file.name}`;
+      const presign = await api.post('/admin/uploads/presign', { 
+        key, 
+        contentType: file.type 
+      });
+      
+      if (presign.data.mode === 'post') {
+        const { url, fields } = presign.data.post;
+        const formData = new FormData();
+        Object.entries(fields).forEach(([k, v]) => formData.append(k, v));
+        formData.append('file', file);
+        await fetch(url, { method: 'POST', body: formData });
+      }
+      
+      return presign.data.publicUrl;
+    } catch (error) {
+      console.error('Error uploading image:', error);
+      throw error;
+    } finally {
+      setUploading(false);
+    }
+  };
+
   const handleSubmit = async (e) => {
     e.preventDefault();
     try {
-      if (editingId) {
-        await api.put(`/admin/testimonials/${editingId}`, formData);
-      } else {
-        await api.post('/admin/testimonials', formData);
+      let imageUrl = formData.studentImage;
+      
+      // Upload image if a new file is selected
+      if (imageFile) {
+        imageUrl = await uploadImage(imageFile);
       }
+      
+      const testimonialData = {
+        ...formData,
+        studentImage: imageUrl
+      };
+      
+      if (editingId) {
+        await api.put(`/admin/testimonials/${editingId}`, testimonialData);
+      } else {
+        await api.post('/admin/testimonials', testimonialData);
+      }
+      
       setShowForm(false);
       setEditingId(null);
       setFormData({ studentName: '', studentImage: '', comment: '', rating: 5 });
+      setImageFile(null);
       fetchTestimonials();
     } catch (error) {
       console.error('Error saving testimonial:', error);
@@ -55,6 +99,7 @@ export default function Testimonials() {
       comment: testimonial.comment,
       rating: testimonial.rating
     });
+    setImageFile(null);
     setEditingId(testimonial.id);
     setShowForm(true);
   };
@@ -135,15 +180,24 @@ export default function Testimonials() {
               </div>
               <div>
                 <label className="block text-sm font-medium text-bca-gray-300 mb-2">
-                  Student Image URL
+                  Student Image
                 </label>
                 <input
-                  type="url"
-                  value={formData.studentImage}
-                  onChange={(e) => setFormData({ ...formData, studentImage: e.target.value })}
-                  className="w-full px-3 py-2 bg-bca-gray-700 border border-bca-gray-600 rounded-lg text-white focus:outline-none focus:border-bca-gold"
-                  placeholder="https://example.com/image.jpg"
+                  type="file"
+                  accept="image/*"
+                  onChange={(e) => setImageFile(e.target.files[0])}
+                  className="w-full px-3 py-2 bg-bca-gray-700 border border-bca-gray-600 rounded-lg text-white focus:outline-none focus:border-bca-gold file:mr-4 file:py-2 file:px-4 file:rounded-full file:border-0 file:text-sm file:font-semibold file:bg-bca-gold file:text-bca-black hover:file:bg-bca-gold/80"
                 />
+                {imageFile && (
+                  <div className="mt-2 text-sm text-bca-gray-400">
+                    Selected: {imageFile.name}
+                  </div>
+                )}
+                {formData.studentImage && !imageFile && (
+                  <div className="mt-2 text-sm text-bca-gray-400">
+                    Current image: {formData.studentImage.split('/').pop()}
+                  </div>
+                )}
               </div>
             </div>
             <div>
@@ -177,9 +231,10 @@ export default function Testimonials() {
             <div className="flex gap-3">
               <button
                 type="submit"
-                className="px-6 py-2 bg-bca-gold text-black rounded-lg font-medium hover:bg-bca-gold/80 transition-colors"
+                disabled={uploading}
+                className="px-6 py-2 bg-bca-gold text-black rounded-lg font-medium hover:bg-bca-gold/80 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
               >
-                {editingId ? 'Update' : 'Create'} Testimonial
+                {uploading ? 'Uploading...' : (editingId ? 'Update' : 'Create')} Testimonial
               </button>
               <button
                 type="button"
@@ -187,6 +242,7 @@ export default function Testimonials() {
                   setShowForm(false);
                   setEditingId(null);
                   setFormData({ studentName: '', studentImage: '', comment: '', rating: 5 });
+                  setImageFile(null);
                 }}
                 className="px-6 py-2 bg-bca-gray-600 text-white rounded-lg font-medium hover:bg-bca-gray-500 transition-colors"
               >
