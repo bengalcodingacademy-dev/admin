@@ -4,6 +4,7 @@ import Layout from "./components/Layout";
 import Login from "./pages/Login";
 import AdminLanding from "./pages/AdminLanding";
 import Courses from "./pages/Courses";
+import CourseContent from "./pages/CourseContent";
 import Webinars from "./pages/Webinars";
 import Announcements from "./pages/Announcements";
 import Sales from "./pages/Sales";
@@ -38,6 +39,7 @@ export default function App() {
                 <Routes>
                   <Route path="/" element={<AdminLanding />} />
                   <Route path="courses" element={<Courses />} />
+                  <Route path="course-content" element={<CourseContent />} />
                   <Route path="webinars" element={<Webinars />} />
                   <Route path="announcements" element={<Announcements />} />
                   <Route path="transactions" element={<Transactions />} />
