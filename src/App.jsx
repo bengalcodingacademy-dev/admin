@@ -1,5 +1,7 @@
 import { Routes, Route, Navigate, useNavigate } from "react-router-dom";
+import { useEffect } from "react";
 import { AuthProvider, useAuth } from "./lib/authContext";
+import { clearAllCaches } from "./utils/cacheUtils";
 import Layout from "./components/Layout";
 import Login from "./pages/Login";
 import AdminLanding from "./pages/AdminLanding";
@@ -28,6 +30,12 @@ function Protected({ children }) {
 
 export default function App() {
   const navigate = useNavigate();
+
+  // Clear all caches on app initialization
+  useEffect(() => {
+    clearAllCaches();
+  }, []);
+
   return (
     <AuthProvider navigate={navigate}>
       <Routes>
