@@ -16,6 +16,8 @@ export default function Testimonials() {
   });
   const [imageFile, setImageFile] = useState(null);
   const [uploading, setUploading] = useState(false);
+  const [error, setError] = useState('');
+  const [success, setSuccess] = useState('');
 
   useEffect(() => {
     fetchTestimonials();
@@ -63,6 +65,9 @@ export default function Testimonials() {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
+    setError('');
+    setSuccess('');
+    
     try {
       let imageUrl = formData.studentImage;
       
@@ -78,8 +83,10 @@ export default function Testimonials() {
       
       if (editingId) {
         await api.put(`/admin/testimonials/${editingId}`, testimonialData);
+        setSuccess('Testimonial updated successfully!');
       } else {
         await api.post('/admin/testimonials', testimonialData);
+        setSuccess('Testimonial created successfully!');
       }
       
       setShowForm(false);
@@ -89,6 +96,7 @@ export default function Testimonials() {
       fetchTestimonials();
     } catch (error) {
       console.error('Error saving testimonial:', error);
+      setError(error.response?.data?.error || 'Failed to save testimonial. Please try again.');
     }
   };
 
@@ -115,14 +123,6 @@ export default function Testimonials() {
     }
   };
 
-  const toggleActive = async (id, isActive) => {
-    try {
-      await api.put(`/admin/testimonials/${id}`, { isActive: !isActive });
-      fetchTestimonials();
-    } catch (error) {
-      console.error('Error updating testimonial:', error);
-    }
-  };
 
   const renderStars = (rating) => {
     return Array.from({ length: 5 }, (_, i) => (
@@ -164,6 +164,19 @@ export default function Testimonials() {
           <h2 className="text-xl font-bold text-white mb-4">
             {editingId ? 'Edit Testimonial' : 'Add New Testimonial'}
           </h2>
+          
+          {error && (
+            <div className="mb-4 p-3 rounded-lg bg-red-500/10 border border-red-500/20 text-red-400 text-sm">
+              {error}
+            </div>
+          )}
+          
+          {success && (
+            <div className="mb-4 p-3 rounded-lg bg-green-500/10 border border-green-500/20 text-green-400 text-sm">
+              {success}
+            </div>
+          )}
+          
           <form onSubmit={handleSubmit} className="space-y-4">
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               <div>
@@ -243,6 +256,8 @@ export default function Testimonials() {
                   setEditingId(null);
                   setFormData({ studentName: '', studentImage: '', comment: '', rating: 5 });
                   setImageFile(null);
+                  setError('');
+                  setSuccess('');
                 }}
                 className="px-6 py-2 bg-bca-gray-600 text-white rounded-lg font-medium hover:bg-bca-gray-500 transition-colors"
               >
@@ -259,61 +274,66 @@ export default function Testimonials() {
             key={testimonial.id}
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
-            className={`bg-bca-gray-800 rounded-lg p-6 border-2 ${
-              testimonial.isActive ? 'border-bca-gold/50' : 'border-bca-gray-600'
-            }`}
+            className="group relative bg-gradient-to-br from-bca-gray-800/90 to-bca-gray-900/90 backdrop-blur-sm rounded-2xl p-6 border border-bca-gold/30 hover:border-bca-gold/60 transition-all duration-300 hover:shadow-[0_0_30px_rgba(253,176,0,0.2)] hover:scale-[1.02]"
           >
-            <div className="flex items-center gap-4 mb-4">
-              {testimonial.studentImage ? (
-                <img
-                  src={testimonial.studentImage}
-                  alt={testimonial.studentName}
-                  className="w-12 h-12 rounded-full object-cover"
-                />
-              ) : (
-                <div className="w-12 h-12 rounded-full bg-bca-gray-700 flex items-center justify-center">
-                  <span className="text-bca-gray-300 font-bold">
-                    {testimonial.studentName.charAt(0).toUpperCase()}
-                  </span>
+            {/* Glow effect */}
+            <div className="absolute inset-0 bg-gradient-to-br from-bca-gold/5 to-transparent rounded-2xl opacity-0 group-hover:opacity-100 transition-opacity duration-300"></div>
+            
+            <div className="relative z-10">
+              <div className="flex items-center gap-4 mb-6">
+                {testimonial.studentImage ? (
+                  <div className="relative">
+                    <img
+                      src={testimonial.studentImage}
+                      alt={testimonial.studentName}
+                      className="w-16 h-16 rounded-full object-cover border-2 border-bca-gold/50 shadow-lg"
+                    />
+                    <div className="absolute -inset-1 bg-gradient-to-r from-bca-gold/20 to-bca-cyan/20 rounded-full blur-sm opacity-0 group-hover:opacity-100 transition-opacity duration-300"></div>
+                  </div>
+                ) : (
+                  <div className="relative">
+                    <div className="w-16 h-16 rounded-full bg-gradient-to-br from-bca-gray-700 to-bca-gray-600 flex items-center justify-center border-2 border-bca-gold/50 shadow-lg">
+                      <span className="text-bca-gold font-bold text-xl">
+                        {testimonial.studentName.charAt(0).toUpperCase()}
+                      </span>
+                    </div>
+                    <div className="absolute -inset-1 bg-gradient-to-r from-bca-gold/20 to-bca-cyan/20 rounded-full blur-sm opacity-0 group-hover:opacity-100 transition-opacity duration-300"></div>
+                  </div>
+                )}
+                <div className="flex-1">
+                  <h3 className="font-bold text-white text-lg mb-1 group-hover:text-bca-gold transition-colors duration-300">
+                    {testimonial.studentName}
+                  </h3>
+                  <div className="flex items-center gap-1">
+                    {renderStars(testimonial.rating)}
+                    <span className="text-bca-gray-400 text-sm ml-2">({testimonial.rating}/5)</span>
+                  </div>
                 </div>
-              )}
-              <div>
-                <h3 className="font-bold text-white">{testimonial.studentName}</h3>
-                <div className="flex">{renderStars(testimonial.rating)}</div>
               </div>
-            </div>
-            <p className="text-bca-gray-300 mb-4 italic">"{testimonial.comment}"</p>
-            <div className="flex justify-between items-center">
-              <span className={`px-2 py-1 rounded text-xs font-medium ${
-                testimonial.isActive 
-                  ? 'bg-bca-gold/20 text-bca-gold' 
-                  : 'bg-bca-gray-600 text-bca-gray-300'
-              }`}>
-                {testimonial.isActive ? 'Active' : 'Inactive'}
-              </span>
-              <div className="flex gap-2">
-                <button
-                  onClick={() => handleEdit(testimonial)}
-                  className="px-3 py-1 bg-bca-cyan/20 text-bca-cyan rounded text-sm hover:bg-bca-cyan/30 transition-colors"
-                >
-                  Edit
-                </button>
-                <button
-                  onClick={() => toggleActive(testimonial.id, testimonial.isActive)}
-                  className={`px-3 py-1 rounded text-sm transition-colors ${
-                    testimonial.isActive
-                      ? 'bg-bca-gray-600 text-bca-gray-300 hover:bg-bca-gray-500'
-                      : 'bg-bca-gold/20 text-bca-gold hover:bg-bca-gold/30'
-                  }`}
-                >
-                  {testimonial.isActive ? 'Deactivate' : 'Activate'}
-                </button>
-                <button
-                  onClick={() => handleDelete(testimonial.id)}
-                  className="px-3 py-1 bg-bca-red/20 text-bca-red rounded text-sm hover:bg-bca-red/30 transition-colors"
-                >
-                  Delete
-                </button>
+              
+              <div className="relative mb-6">
+                <div className="absolute left-0 top-0 text-bca-gold/30 text-4xl font-serif leading-none">"</div>
+                <p className="text-bca-gray-300 italic pl-6 pr-2 leading-relaxed text-sm">
+                  {testimonial.comment}
+                </p>
+                <div className="absolute right-0 bottom-0 text-bca-gold/30 text-4xl font-serif leading-none">"</div>
+              </div>
+              
+              <div className="flex justify-end">
+                <div className="flex gap-3">
+                  <button
+                    onClick={() => handleEdit(testimonial)}
+                    className="px-4 py-2 bg-gradient-to-r from-bca-cyan/20 to-bca-cyan/10 text-bca-cyan rounded-lg text-sm font-medium hover:from-bca-cyan/30 hover:to-bca-cyan/20 transition-all duration-300 border border-bca-cyan/30 hover:border-bca-cyan/50 hover:shadow-[0_0_15px_rgba(0,161,255,0.3)]"
+                  >
+                    ✏️ Edit
+                  </button>
+                  <button
+                    onClick={() => handleDelete(testimonial.id)}
+                    className="px-4 py-2 bg-gradient-to-r from-bca-red/20 to-bca-red/10 text-bca-red rounded-lg text-sm font-medium hover:from-bca-red/30 hover:to-bca-red/20 transition-all duration-300 border border-bca-red/30 hover:border-bca-red/50 hover:shadow-[0_0_15px_rgba(239,68,68,0.3)]"
+                  >
+                    🗑️ Delete
+                  </button>
+                </div>
               </div>
             </div>
           </motion.div>
