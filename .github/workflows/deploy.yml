@@ -3,11 +3,7 @@ name: Deploy Admin Frontend to DigitalOcean
 on:
   push:
     branches:
-      - main
-    paths:
-      - 'admin/**'
-      - '.github/workflows/admin-deploy.yml'
-  workflow_dispatch:
+      - main   # deploy when you push to main
 
 jobs:
   deploy:
