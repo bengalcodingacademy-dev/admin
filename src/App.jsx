@@ -27,6 +27,7 @@ function Protected({ children }) {
   return user ? children : <Navigate to="/login" />;
 }
 
+// App component
 export default function App() {
   const navigate = useNavigate();
 
