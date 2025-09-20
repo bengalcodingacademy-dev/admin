@@ -134,6 +134,17 @@ export default function AdminLanding() {
       color: 'cyan'
     },
     {
+      to: '/youtube-videos',
+      title: 'YouTube Videos',
+      description: 'Manage YouTube videos for the homepage slideshow with automatic rotation.',
+      icon: (
+        <svg className="w-6 h-6 text-bca-gold" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M14.828 14.828a4 4 0 01-5.656 0M9 10h1m4 0h1m-6 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+        </svg>
+      ),
+      color: 'gold'
+    },
+    {
       to: '/meeting-requests',
       title: 'Meeting Requests',
       description: 'Review and manage 1:1 meeting requests from students.',

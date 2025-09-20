@@ -89,7 +89,9 @@ export default function Courses() {
   const load = async () => {
     try {
       setLoading(true);
-      const response = await api.get('/courses');
+      console.log('Loading courses...');
+      const response = await api.get('/admin/courses');
+      console.log('Courses loaded:', response.data);
       setList(response.data);
     } catch (error) {
       console.error('Error loading courses:', error);
@@ -247,7 +249,11 @@ export default function Courses() {
       setShowTestimonials(false);
       setEditingCourse(null);
       setIsEditing(false);
-      load();
+      
+      // Refresh the courses list with a small delay to ensure the course is created
+      setTimeout(() => {
+        load();
+      }, 500);
     } catch (error) {
       console.error('Error creating course:', error);
       setIsCreating(false);

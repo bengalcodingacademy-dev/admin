@@ -11,6 +11,7 @@ import Sales from "./pages/Sales";
 import Users from "./pages/Users";
 import Transactions from "./pages/Transactions";
 import Testimonials from "./pages/Testimonials";
+import YouTubeVideos from "./pages/YouTubeVideos";
 import MeetingRequests from "./pages/MeetingRequests";
 
 function Protected({ children }) {
@@ -46,6 +47,7 @@ export default function App() {
                   <Route path="sales" element={<Sales />} />
                   <Route path="users" element={<Users />} />
                   <Route path="testimonials" element={<Testimonials />} />
+                  <Route path="youtube-videos" element={<YouTubeVideos />} />
                   <Route path="meeting-requests" element={<MeetingRequests />} />
                   <Route path="*" element={<Navigate to="/" />} />
                 </Routes>
