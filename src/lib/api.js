@@ -14,25 +14,12 @@ export function setInitialCheckComplete() {
 
 export const api = axios.create({ 
   baseURL: API_BASE,
-  withCredentials: true, // Enable cookies
-  headers: {
-    'Cache-Control': 'no-cache, no-store, must-revalidate',
-    'Pragma': 'no-cache',
-    'Expires': '0'
-  }
+  withCredentials: true // Enable cookies
 });
 
-// Add request interceptor for cache-busting
+// Request interceptor for additional configuration
 api.interceptors.request.use(
   config => {
-    // Add timestamp to prevent caching
-    const timestamp = Date.now();
-    if (config.method === 'get') {
-      config.params = {
-        ...config.params,
-        _t: timestamp
-      };
-    }
     return config;
   },
   error => {
