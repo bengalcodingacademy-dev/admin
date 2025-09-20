@@ -1,6 +1,10 @@
 import { Link } from 'react-router-dom';
 import { useAuth } from '../lib/authContext';
 
+/**
+ * Sauvik Chatterjee
+ */
+
 export default function Layout({ children }) {
   const { logout } = useAuth();
   return (
@@ -22,6 +26,7 @@ export default function Layout({ children }) {
             <button onClick={logout} className="px-2 md:px-3 py-1 md:py-1.5 rounded-xl bg-bca-red hover:bg-bca-red/80 transition-colors text-xs md:text-sm">
               Logout
             </button>
+            
           </div>
         </div>
       </header>
