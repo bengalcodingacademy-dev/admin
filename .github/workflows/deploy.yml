@@ -19,11 +19,11 @@ jobs:
           node-version: '18'
 
       - name: Install dependencies
-        working-directory: ./admin
+        working-directory: ./
         run: npm ci
 
       - name: Build admin frontend
-        working-directory: ./admin
+        working-directory: ./
         env:
           VITE_API_BASE: ${{ secrets.VITE_API_BASE }}
         run: npm run build
@@ -34,7 +34,7 @@ jobs:
           host: ${{ secrets.DO_HOST }}
           username: ${{ secrets.DO_USER }}
           key: ${{ secrets.DO_KEY }}
-          source: "admin/dist/*"
+          source: "dist/*"
           target: "~/admin-frontend"
           strip_components: 1
 
