@@ -45,6 +45,17 @@ jobs:
           username: ${{ secrets.DO_USER }}
           key: ${{ secrets.DO_KEY }}
           script: |
+            # Clean up any existing Nginx issues before deployment
+            echo "Cleaning up existing Nginx issues..."
+            sudo systemctl stop nginx 2>/dev/null || true
+            sudo fuser -k 80/tcp 2>/dev/null || true
+            sudo fuser -k 443/tcp 2>/dev/null || true
+            sleep 2
+            
+            # Fix any existing configuration issues
+            sudo sed -i 's/gzip_proxied expired no-cache no-store private must-revalidate auth;/gzip_proxied expired no-cache no-store private auth;/' /etc/nginx/sites-enabled/*.com 2>/dev/null || true
+            sudo rm -f /etc/nginx/sites-enabled/00-*.com 2>/dev/null || true
+            
             # Update system packages
             sudo apt-get update
 
@@ -131,6 +142,17 @@ jobs:
             echo "Fixing Nginx configuration issues..."
             sudo sed -i 's/gzip_proxied expired no-cache no-store private must-revalidate auth;/gzip_proxied expired no-cache no-store private auth;/' /etc/nginx/sites-enabled/*.com 2>/dev/null || true
             
+            # Kill any processes using ports 80 and 443
+            echo "Stopping any processes using ports 80 and 443..."
+            sudo fuser -k 80/tcp 2>/dev/null || true
+            sudo fuser -k 443/tcp 2>/dev/null || true
+            sleep 2
+            
+            # Stop Nginx completely before restarting
+            echo "Stopping Nginx service..."
+            sudo systemctl stop nginx 2>/dev/null || true
+            sleep 2
+            
             # Ensure main website has proper SSL configuration
             if [ -f "/etc/nginx/sites-enabled/bengalcodingacademy.com" ]; then
                 echo "Fixing main website SSL configuration..."
@@ -147,7 +169,15 @@ jobs:
                 echo "Nginx configuration test failed. Attempting to fix..."
                 # Try to fix common issues
                 sudo sed -i 's/must-revalidate auth/auth/g' /etc/nginx/sites-enabled/*.com 2>/dev/null || true
-                sudo nginx -t
+                sudo sed -i 's/gzip_proxied expired no-cache no-store private must-revalidate auth;/gzip_proxied expired no-cache no-store private auth;/' /etc/nginx/sites-enabled/*.com 2>/dev/null || true
+                
+                # Test again
+                if ! sudo nginx -t; then
+                    echo "Nginx configuration still failing. Checking for conflicting server names..."
+                    # Remove duplicate server blocks
+                    sudo rm -f /etc/nginx/sites-enabled/00-*.com 2>/dev/null || true
+                    sudo nginx -t
+                fi
             fi
 
             # Start/restart Nginx
@@ -155,8 +185,17 @@ jobs:
             sudo systemctl restart nginx
             sudo systemctl enable nginx
 
-            # Wait a moment for Nginx to start
+            # Wait a moment for Nginx to start and check status
             sleep 5
+            
+            # Verify Nginx is running
+            if ! sudo systemctl is-active --quiet nginx; then
+                echo "Nginx failed to start. Checking status..."
+                sudo systemctl status nginx
+                echo "Attempting to start Nginx again..."
+                sudo systemctl start nginx
+                sleep 3
+            fi
 
             # Check if Nginx is running
             if ! sudo systemctl is-active --quiet nginx; then
