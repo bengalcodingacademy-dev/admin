@@ -83,7 +83,7 @@ jobs:
                 gzip on;
                 gzip_vary on;
                 gzip_min_length 1024;
-                gzip_proxied expired no-cache no-store private must-revalidate auth;
+                gzip_proxied expired no-cache no-store private auth;
                 gzip_types text/plain text/css text/xml text/javascript application/x-javascript application/xml+rss application/javascript application/json;
 
                 # Root directory
@@ -127,26 +127,69 @@ jobs:
             # Enable the site
             sudo ln -sf /etc/nginx/sites-available/admin.bengalcodingacademy.com /etc/nginx/sites-enabled/
 
+            # Fix any existing Nginx configuration issues
+            echo "Fixing Nginx configuration issues..."
+            sudo sed -i 's/gzip_proxied expired no-cache no-store private must-revalidate auth;/gzip_proxied expired no-cache no-store private auth;/' /etc/nginx/sites-enabled/*.com 2>/dev/null || true
+            
+            # Ensure main website has proper SSL configuration
+            if [ -f "/etc/nginx/sites-enabled/bengalcodingacademy.com" ]; then
+                echo "Fixing main website SSL configuration..."
+                # Check if SSL is configured, if not, configure it
+                if ! grep -q "listen 443" /etc/nginx/sites-enabled/bengalcodingacademy.com; then
+                    echo "Adding SSL configuration to main website..."
+                    sudo certbot --nginx -d bengalcodingacademy.com -d www.bengalcodingacademy.com --non-interactive --agree-tos --email admin@bengalcodingacademy.com || echo "SSL configuration failed for main site"
+                fi
+            fi
+
             # Test Nginx configuration
-            sudo nginx -t
+            echo "Testing Nginx configuration..."
+            if ! sudo nginx -t; then
+                echo "Nginx configuration test failed. Attempting to fix..."
+                # Try to fix common issues
+                sudo sed -i 's/must-revalidate auth/auth/g' /etc/nginx/sites-enabled/*.com 2>/dev/null || true
+                sudo nginx -t
+            fi
 
             # Start/restart Nginx
+            echo "Restarting Nginx..."
             sudo systemctl restart nginx
             sudo systemctl enable nginx
 
             # Wait a moment for Nginx to start
             sleep 5
 
-            # Skip SSL certificate management - certificates are managed separately
-            echo "Skipping SSL certificate management to avoid rate limits..."
-            echo "SSL certificates should be managed manually or through separate process"
+            # Check if Nginx is running
+            if ! sudo systemctl is-active --quiet nginx; then
+                echo "Nginx failed to start. Checking logs..."
+                sudo journalctl -u nginx --no-pager -l
+                exit 1
+            fi
 
-            # Show status
-            echo "=== Admin Frontend Deployment Status ==="
+            # Configure SSL if certificates exist
+            echo "Checking for SSL certificates..."
+            if [ -f "/etc/letsencrypt/live/admin.bengalcodingacademy.com/fullchain.pem" ]; then
+                echo "SSL certificate found. Configuring HTTPS..."
+                sudo certbot --nginx -d admin.bengalcodingacademy.com --non-interactive --agree-tos --email admin@bengalcodingacademy.com || echo "SSL configuration failed, continuing with HTTP only"
+            else
+                echo "No SSL certificate found for admin.bengalcodingacademy.com"
+            fi
+
+            # Final verification
+            echo "=== Final Verification ==="
             sudo systemctl status nginx --no-pager
-            echo "=== Admin Frontend is now available at ==="
-            echo "HTTP: http://admin.bengalcodingacademy.com"
-            echo "HTTPS: https://admin.bengalcodingacademy.com (if SSL configured)"
+            
+            # Test if sites are accessible
+            echo "Testing site accessibility..."
+            curl -I http://admin.bengalcodingacademy.com || echo "HTTP test failed"
+            curl -I https://admin.bengalcodingacademy.com || echo "HTTPS test failed"
+            curl -I http://www.bengalcodingacademy.com || echo "Main site HTTP test failed"
+            curl -I https://www.bengalcodingacademy.com || echo "Main site HTTPS test failed"
+            
+            echo "=== Deployment Complete ==="
+            echo "Admin Frontend: http://admin.bengalcodingacademy.com"
+            echo "Admin Frontend (HTTPS): https://admin.bengalcodingacademy.com"
+            echo "Main Website: http://www.bengalcodingacademy.com"
+            echo "Main Website (HTTPS): https://www.bengalcodingacademy.com"
 
       - name: Cleanup
         uses: appleboy/ssh-action@v1.0.3
