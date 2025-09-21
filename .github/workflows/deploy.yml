@@ -137,19 +137,16 @@ jobs:
             # Wait a moment for Nginx to start
             sleep 5
 
-            # Obtain SSL certificate with Certbot
-            sudo certbot --nginx -d admin.bengalcodingacademy.com --non-interactive --agree-tos --email ${{ secrets.EMAIL }} --redirect
-
-            # Setup automatic certificate renewal
-            echo "0 12 * * * /usr/bin/certbot renew --quiet" | sudo crontab -
+            # Skip SSL certificate management - certificates are managed separately
+            echo "Skipping SSL certificate management to avoid rate limits..."
+            echo "SSL certificates should be managed manually or through separate process"
 
             # Show status
             echo "=== Admin Frontend Deployment Status ==="
             sudo systemctl status nginx --no-pager
             echo "=== Admin Frontend is now available at ==="
-            echo "HTTPS: https://admin.bengalcodingacademy.com"
-            echo "=== SSL Certificate Status ==="
-            sudo certbot certificates
+            echo "HTTP: http://admin.bengalcodingacademy.com"
+            echo "HTTPS: https://admin.bengalcodingacademy.com (if SSL configured)"
 
       - name: Cleanup
         uses: appleboy/ssh-action@v1.0.3
