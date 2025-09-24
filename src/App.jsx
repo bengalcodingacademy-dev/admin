@@ -20,7 +20,14 @@ function Protected({ children }) {
   if (loading) {
     return (
       <div className="min-h-screen bg-bca-black flex items-center justify-center">
-        <div className="text-bca-gold text-xl">Loading...</div>
+        <video
+          src="https://sauvikbcabucket.s3.ap-south-1.amazonaws.com/assets/shimmer.mp4"
+          autoPlay
+          loop
+          muted
+          playsInline
+          className="w-40 h-40 md:w-60 md:h-60 object-contain"
+        />
       </div>
     );
   }
