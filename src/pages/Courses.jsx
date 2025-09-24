@@ -44,7 +44,7 @@ export default function Courses() {
   const [form, setForm] = useState({
     title:'',
     slug:'',
-    priceCents:0,
+    priceRupees:0,
     shortDesc:'',
     longDesc:'',
     imageUrl:'',
@@ -62,7 +62,7 @@ export default function Courses() {
     endDate: '',
     // Monthly payment fields
     durationMonths: 0,
-    monthlyFeeCents: 0,
+    monthlyFeeRupees: 0,
     isMonthlyPayment: false,
     // Additional fields for course details
     modeOfCourse: 'LIVE + Recordings',
@@ -164,7 +164,7 @@ export default function Courses() {
       }
       // Validate pricing based on payment type
       if (form.isMonthlyPayment) {
-        if (form.monthlyFeeCents <= 0) {
+        if (form.monthlyFeeRupees <= 0) {
           setError('Monthly fee must be greater than 0');
           setIsCreating(false);
           return;
@@ -175,7 +175,7 @@ export default function Courses() {
           return;
         }
       } else {
-        if (form.priceCents <= 0) {
+        if (form.priceRupees <= 0) {
           setError('Price must be greater than 0');
           setIsCreating(false);
           return;
@@ -191,8 +191,21 @@ export default function Courses() {
         modulesJson: form.modules.length > 0 ? form.modules : null,
         courseIncludes: form.courseIncludes.length > 0 ? form.courseIncludes : null,
         startDate: form.startDate ? new Date(form.startDate) : null,
+        // Store rupees directly
+        priceRupees: form.isMonthlyPayment ? 0 : form.priceRupees,
+        monthlyFeeRupees: form.isMonthlyPayment ? form.monthlyFeeRupees : 0,
         endDate: form.endDate ? new Date(form.endDate) : null
       };
+      
+      console.log('Form data before sending:', {
+        isMonthlyPayment: form.isMonthlyPayment,
+        priceRupees: form.priceRupees,
+        monthlyFeeRupees: form.monthlyFeeRupees
+      });
+      console.log('Payload being sent:', {
+        priceRupees: payload.priceRupees,
+        monthlyFeeRupees: payload.monthlyFeeRupees
+      });
       
       if (!payload.imageUrl) delete payload.imageUrl;
       
@@ -300,12 +313,36 @@ export default function Courses() {
   
   const remove = async (id) => { 
     try {
-      if (window.confirm('Are you sure you want to delete this course? This will permanently delete the course and all associated data (purchases, monthly payments, testimonials, coupons, announcements). This action cannot be undone.')) {
-        await api.delete(`/admin/courses/${id}`); 
-        load(); 
+      if (window.confirm('Are you sure you want to delete this course? This will permanently delete the course and all associated data (purchases, monthly payments, testimonials, coupons, announcements, course content). This action cannot be undone.')) {
+        // Clear previous messages
+        setError('');
+        setSuccess('');
+        
+        // Show loading state
+        setLoading(true);
+        
+        const response = await api.delete(`/admin/courses/${id}`); 
+        console.log('Delete response:', response.data);
+        
+        // Show success message
+        setSuccess('Course deleted successfully!');
+        
+        // Reload the courses list
+        await load();
+        
+        // Clear success message after 3 seconds
+        setTimeout(() => setSuccess(''), 3000);
+        
+        // Force a small delay to ensure the UI updates properly
+        setTimeout(() => {
+          // Scroll to top to show the updated list
+          window.scrollTo({ top: 0, behavior: 'smooth' });
+        }, 100);
       }
     } catch (error) {
       console.error('Error deleting course:', error);
+      setError(error.response?.data?.error || 'Failed to delete course. Please try again.');
+      setLoading(false); // Reset loading state on error
     }
   };
 
@@ -318,7 +355,7 @@ export default function Courses() {
       setForm({
         title: course.title || '',
         slug: course.slug || '',
-        priceCents: course.priceCents || 0,
+        priceRupees: parseFloat(course.priceRupees) || 0,
         shortDesc: course.shortDesc || '',
         longDesc: course.longDesc || '',
         imageUrl: course.imageUrl || '',
@@ -334,7 +371,7 @@ export default function Courses() {
         startDate: course.startDate ? new Date(course.startDate).toISOString().split('T')[0] : '',
         endDate: course.endDate ? new Date(course.endDate).toISOString().split('T')[0] : '',
         durationMonths: course.durationMonths || 0,
-        monthlyFeeCents: course.monthlyFeeCents || 0,
+        monthlyFeeRupees: parseFloat(course.monthlyFeeRupees) || 0,
         isMonthlyPayment: course.isMonthlyPayment || false,
         modeOfCourse: 'LIVE + Recordings',
         classRecordingProvided: 'Yes [HD Quality]',
@@ -364,7 +401,7 @@ export default function Courses() {
     setForm({
       title:'',
       slug:'',
-      priceCents:0,
+      priceRupees:0,
       shortDesc:'',
       longDesc:'',
       imageUrl:'',
@@ -380,7 +417,7 @@ export default function Courses() {
       startDate: '',
       endDate: '',
       durationMonths: 0,
-      monthlyFeeCents: 0,
+      monthlyFeeRupees: 0,
       isMonthlyPayment: false,
       modeOfCourse: 'LIVE + Recordings',
       classRecordingProvided: 'Yes [HD Quality]',
@@ -1092,10 +1129,12 @@ export default function Courses() {
                         <input
                           type="number"
                           placeholder="0"
+                          min="0"
+                          step="0.01"
                           className="w-full px-3 py-2 rounded-lg bg-bca-gray-700 border border-bca-gray-600 text-white focus:outline-none focus:border-bca-gold"
-                          value={form.priceCents}
+                          value={form.priceRupees}
                           onChange={e=>{
-                            setForm(f=>({...f,priceCents: Number(e.target.value||0)}));
+                            setForm(f=>({...f,priceRupees: Number(e.target.value||0)}));
                             clearError();
                           }}
                         />
@@ -1128,8 +1167,8 @@ export default function Courses() {
                                     ...f,
                                     isMonthlyPayment: isMonthly,
                                     // Clear the opposite price field when switching
-                                    priceCents: isMonthly ? 0 : f.priceCents,
-                                    monthlyFeeCents: isMonthly ? f.monthlyFeeCents : 0,
+                                    priceRupees: isMonthly ? 0 : f.priceRupees,
+                                    monthlyFeeRupees: isMonthly ? f.monthlyFeeRupees : 0,
                                     durationMonths: isMonthly ? f.durationMonths : 0
                                   }));
                                   clearError();
@@ -1161,9 +1200,14 @@ export default function Courses() {
                                   type="number"
                                   placeholder="1500"
                                   min="0"
+                                  step="0.01"
                                   className="w-full px-3 py-2 rounded-lg bg-bca-gray-700 border border-bca-gray-600 text-white focus:outline-none focus:border-bca-gold"
-                                  value={form.monthlyFeeCents}
-                                  onChange={e=>setForm(f=>({...f,monthlyFeeCents: Number(e.target.value||0)}))}
+                                  value={form.monthlyFeeRupees}
+                                  onChange={e=>{
+                                    const value = Number(e.target.value||0);
+                                    console.log('Monthly fee input changed:', e.target.value, '->', value);
+                                    setForm(f=>({...f,monthlyFeeRupees: value}));
+                                  }}
                                 />
                               </div>
                             </>
@@ -1172,10 +1216,10 @@ export default function Courses() {
                         {form.isMonthlyPayment && (
                           <div className="mt-3 p-3 bg-bca-gold/10 rounded-lg border border-bca-gold/30">
                             <p className="text-bca-gold text-sm">
-                              💡 Monthly Payment: ₹{form.monthlyFeeCents} per month for {form.durationMonths} months
-                              {form.durationMonths > 0 && form.monthlyFeeCents > 0 && (
+                              💡 Monthly Payment: ₹{(parseFloat(form.monthlyFeeRupees) || 0).toFixed(2)} per month for {form.durationMonths} months
+                              {form.durationMonths > 0 && form.monthlyFeeRupees > 0 && (
                                 <span className="block mt-1">
-                                  Total: ₹{(form.durationMonths * form.monthlyFeeCents).toLocaleString()}
+                                  Total: ₹{(form.durationMonths * (parseFloat(form.monthlyFeeRupees) || 0)).toFixed(2)}
                                 </span>
                               )}
                             </p>
@@ -1302,14 +1346,14 @@ export default function Courses() {
                     {c.isMonthlyPayment ? (
                       <div>
                         <p className="text-bca-gold font-semibold">
-                          ₹{c.monthlyFeeCents} per month for {c.durationMonths} months
+                          ₹{(parseFloat(c.monthlyFeeRupees) || 0).toFixed(2)} per month for {c.durationMonths} months
                         </p>
                         <p className="text-bca-gray-400 text-xs">
-                          Total: ₹{((c.monthlyFeeCents || 0) * (c.durationMonths || 0)).toLocaleString()}
+                          Total: ₹{((parseFloat(c.monthlyFeeRupees) || 0) * (c.durationMonths || 0)).toFixed(2)}
                         </p>
                       </div>
                     ) : (
-                      <p className="text-bca-gold font-semibold">₹{(c.priceCents/100).toFixed(2)}</p>
+                      <p className="text-bca-gold font-semibold">₹{(parseFloat(c.priceRupees) || 0).toFixed(2)}</p>
                     )}
                   </div>
                 </div>

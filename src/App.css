@@ -41,13 +41,64 @@
   color: #888;
 }
 
-/* CKEditor Text Color Styling - Keep light theme but ensure black text */
+/* CKEditor Dark Toolbar Theme Styling */
+.ck-editor {
+  border-radius: 8px;
+  overflow: hidden;
+}
+
+/* Force override any default CKEditor toolbar styling */
+.ck-editor__main > .ck-toolbar,
+.ck-editor__main .ck-toolbar {
+  background-color: #2d3748 !important;
+  border-color: #4a5568 !important;
+}
+
+/* CKEditor toolbar - dark blue/gray theme */
+.ck-editor__top,
+.ck-toolbar {
+  background-color: #2d3748 !important;
+  border: 1px solid #4a5568 !important;
+  border-bottom: none !important;
+}
+
+.ck-toolbar__separator {
+  background-color: #4a5568 !important;
+}
+
+/* CKEditor toolbar buttons - white icons on dark background */
+.ck-button,
+.ck-button__label,
+.ck-dropdown__button {
+  color: #ffffff !important;
+}
+
+.ck-button:hover,
+.ck-button.ck-on {
+  background-color: #4a5568 !important;
+  color: #ffffff !important;
+}
+
+.ck-button__icon {
+  color: #ffffff !important;
+}
+
+.ck-button:hover .ck-button__icon,
+.ck-button.ck-on .ck-button__icon {
+  color: #ffffff !important;
+}
+
+/* CKEditor editable area - white background with black text */
 .ck-editor__editable,
 .ck-editor__editable_inline,
 .ck-content {
+  background-color: #ffffff !important;
   color: #000000 !important;
+  border: 1px solid #e2e8f0 !important;
+  border-top: none !important;
 }
 
+/* All text elements in editor should be black */
 .ck-editor__editable p,
 .ck-editor__editable div,
 .ck-editor__editable span,
@@ -85,13 +136,75 @@
   color: #000000 !important;
 }
 
-/* Custom class for CKEditor containers - ensure black text */
+/* Custom class for CKEditor containers - dark toolbar with black text */
+.ck-editor-dark .ck-editor__top,
+.ck-editor-dark .ck-toolbar {
+  background-color: #2d3748 !important;
+  border: 1px solid #4a5568 !important;
+  border-bottom: none !important;
+}
+
 .ck-editor-dark .ck-editor__editable,
 .ck-editor-dark .ck-content {
+  background-color: #ffffff !important;
   color: #000000 !important;
+  border: 1px solid #e2e8f0 !important;
+  border-top: none !important;
 }
 
 .ck-editor-dark .ck-editor__editable *,
 .ck-editor-dark .ck-content * {
   color: #000000 !important;
+}
+
+/* CKEditor dropdown menus */
+.ck-dropdown__panel {
+  background-color: #2d3748 !important;
+  border: 1px solid #4a5568 !important;
+  box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.3) !important;
+}
+
+.ck-list__item {
+  color: #ffffff !important;
+}
+
+.ck-list__item:hover {
+  background-color: #4a5568 !important;
+  color: #ffffff !important;
+}
+
+/* CKEditor placeholder text */
+.ck-editor__editable.ck-placeholder::before {
+  color: #9ca3af !important;
+}
+
+/* Focus state */
+.ck-editor__editable:focus {
+  outline: none !important;
+  border-color: #3b82f6 !important;
+  box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.1) !important;
+}
+
+/* Additional toolbar styling to ensure dark theme */
+.ck-editor__main .ck-toolbar,
+.ck-editor__main .ck-toolbar__items,
+.ck-editor__main .ck-toolbar__separator {
+  background-color: #2d3748 !important;
+  color: #ffffff !important;
+}
+
+/* Ensure all toolbar buttons have white icons */
+.ck-editor__main .ck-button svg,
+.ck-editor__main .ck-button .ck-icon {
+  fill: #ffffff !important;
+  color: #ffffff !important;
+}
+
+/* Dropdown button styling */
+.ck-editor__main .ck-dropdown__button {
+  color: #ffffff !important;
+}
+
+.ck-editor__main .ck-dropdown__button .ck-button__icon {
+  color: #ffffff !important;
 }
