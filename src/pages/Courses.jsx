@@ -162,15 +162,17 @@ export default function Courses() {
         setIsCreating(false);
         return;
       }
+      // Validate duration (required for both payment types)
+      if (form.durationMonths <= 0) {
+        setError('Duration must be at least 1 month');
+        setIsCreating(false);
+        return;
+      }
+      
       // Validate pricing based on payment type
       if (form.isMonthlyPayment) {
         if (form.monthlyFeeRupees <= 0) {
           setError('Monthly fee must be greater than 0');
-          setIsCreating(false);
-          return;
-        }
-        if (form.durationMonths <= 0) {
-          setError('Duration must be at least 1 month');
           setIsCreating(false);
           return;
         }
@@ -206,6 +208,7 @@ export default function Courses() {
         priceRupees: payload.priceRupees,
         monthlyFeeRupees: payload.monthlyFeeRupees
       });
+      console.log('Price input value:', form.priceRupees, 'Type:', typeof form.priceRupees);
       
       if (!payload.imageUrl) delete payload.imageUrl;
       
@@ -245,10 +248,10 @@ export default function Courses() {
       
       // Reset form and editing state
       setForm({ 
-        title:'', slug:'', priceCents:0, shortDesc:'', longDesc:'', imageUrl:'', coupons: [],
+        title:'', slug:'', priceRupees:0, shortDesc:'', longDesc:'', imageUrl:'', coupons: [],
         numberOfModules: 0, modules: [], numberOfLectures: 0, language: 'bengali',
         starRating: 4.9, numberOfStudents: 0, aboutCourse: '', courseIncludes: [],
-        startDate: '', endDate: '', durationMonths: 0, monthlyFeeCents: 0, isMonthlyPayment: false,
+        startDate: '', endDate: '', durationMonths: 0, monthlyFeeRupees: 0, isMonthlyPayment: false,
         modeOfCourse: 'LIVE + Recordings', classRecordingProvided: 'Yes [HD Quality]', 
         doubtClasses: '20 Doubt Sessions', courseValidity: '2 Years', programmingLanguage: 'C++',
         classSchedule: '[Monday, Wednesday, Saturday, Sunday]', classTimings: '8:30pm - 11pm'
@@ -350,6 +353,9 @@ export default function Courses() {
     try {
       setEditingCourse(course);
       setIsEditing(true);
+      
+      // Debug: Log the raw price value from database
+      console.log('Course price from DB:', course.priceRupees, 'Parsed:', parseFloat(course.priceRupees) || 0);
       
       // Populate form with course data
       setForm({
@@ -1146,8 +1152,8 @@ export default function Courses() {
                                     isMonthlyPayment: isMonthly,
                                     // Clear the opposite price field when switching
                                     priceRupees: isMonthly ? 0 : f.priceRupees,
-                                    monthlyFeeRupees: isMonthly ? f.monthlyFeeRupees : 0,
-                                    durationMonths: isMonthly ? f.durationMonths : 0
+                                    monthlyFeeRupees: isMonthly ? f.monthlyFeeRupees : 0
+                                    // Keep durationMonths for both payment types
                                   }));
                                   clearError();
                                 }}
@@ -1155,40 +1161,38 @@ export default function Courses() {
                               Enable Monthly Payment
                             </label>
                           </div>
+                          <div>
+                            <label className="block text-sm font-medium text-bca-gray-300 mb-2">
+                              Duration (Months) *
+                            </label>
+                            <input
+                              type="number"
+                              placeholder="6"
+                              min="1"
+                              className="w-full px-3 py-2 rounded-lg bg-bca-gray-700 border border-bca-gray-600 text-white focus:outline-none focus:border-bca-gold"
+                              value={form.durationMonths}
+                              onChange={e=>setForm(f=>({...f,durationMonths: Number(e.target.value||0)}))}
+                            />
+                          </div>
                           {form.isMonthlyPayment && (
-                            <>
-                              <div>
-                                <label className="block text-sm font-medium text-bca-gray-300 mb-2">
-                                  Duration (Months)
-                                </label>
-                                <input
-                                  type="number"
-                                  placeholder="6"
-                                  min="1"
-                                  className="w-full px-3 py-2 rounded-lg bg-bca-gray-700 border border-bca-gray-600 text-white focus:outline-none focus:border-bca-gold"
-                                  value={form.durationMonths}
-                                  onChange={e=>setForm(f=>({...f,durationMonths: Number(e.target.value||0)}))}
-                                />
-                              </div>
-                              <div>
-                                <label className="block text-sm font-medium text-bca-gray-300 mb-2">
-                                  Monthly Fee (₹)
-                                </label>
-                                <input
-                                  type="number"
-                                  placeholder="1500"
-                                  min="0"
-                                  step="0.01"
-                                  className="w-full px-3 py-2 rounded-lg bg-bca-gray-700 border border-bca-gray-600 text-white focus:outline-none focus:border-bca-gold"
-                                  value={form.monthlyFeeRupees}
-                                  onChange={e=>{
-                                    const value = Number(e.target.value||0);
-                                    console.log('Monthly fee input changed:', e.target.value, '->', value);
-                                    setForm(f=>({...f,monthlyFeeRupees: value}));
-                                  }}
-                                />
-                              </div>
-                            </>
+                            <div>
+                              <label className="block text-sm font-medium text-bca-gray-300 mb-2">
+                                Monthly Fee (₹)
+                              </label>
+                              <input
+                                type="number"
+                                placeholder="1500"
+                                min="0"
+                                step="0.01"
+                                className="w-full px-3 py-2 rounded-lg bg-bca-gray-700 border border-bca-gray-600 text-white focus:outline-none focus:border-bca-gold"
+                                value={form.monthlyFeeRupees}
+                                onChange={e=>{
+                                  const value = Number(e.target.value||0);
+                                  console.log('Monthly fee input changed:', e.target.value, '->', value);
+                                  setForm(f=>({...f,monthlyFeeRupees: value}));
+                                }}
+                              />
+                            </div>
                           )}
                         </div>
                         {form.isMonthlyPayment && (
