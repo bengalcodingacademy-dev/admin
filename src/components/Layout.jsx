@@ -12,7 +12,7 @@ export default function Layout({ children }) {
       <header className="sticky top-0 z-20 backdrop-blur bg-black/60 border-b border-white/10">
         <div className="max-w-6xl mx-auto px-4 py-3 flex items-center justify-between">
           <Link to="/" className="flex items-center gap-2 md:gap-3 font-bold text-lg md:text-xl tracking-wide">
-            <img src="/https://sauvikbcabucket.s3.ap-south-1.amazonaws.com/assets/bca-logo.jpg" alt="BCA" className="h-6 w-6 md:h-8 md:w-8 rounded" />
+            <img src="https://sauvikbcabucket.s3.ap-south-1.amazonaws.com/assets/bca-logo.jpg" alt="BCA" className="h-6 w-6 md:h-8 md:w-8 rounded" />
             <span className="hidden sm:inline">BCA Admin</span>
             <span className="sm:hidden">Admin</span>
           </Link>
