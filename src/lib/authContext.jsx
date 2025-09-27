@@ -8,6 +8,7 @@ export function AuthProvider({ children, navigate }) {
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
+    console.log('Sauvik --- Auth context useEffect called');
     // Check auth status first
     checkAuthStatus();
   }, [navigate]);
@@ -29,10 +30,13 @@ export function AuthProvider({ children, navigate }) {
       
       // Set up logout handler AFTER initial check is complete
       onLogout((message) => {
+        console.log('Sauvik --- Logout handler called with:', message);
         setUser(null);
         navigate('/login');
-        if (message) {
+        if (message && typeof message === 'string') {
           alert(message);
+        } else if (message) {
+          console.error('Sauvik --- Invalid logout message type:', typeof message, message);
         }
       });
     }
