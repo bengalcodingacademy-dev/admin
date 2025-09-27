@@ -6,6 +6,8 @@ const AuthContext = createContext(null);
 export function AuthProvider({ children, navigate }) {
   const [user, setUser] = useState(null);
   const [loading, setLoading] = useState(true);
+  
+  console.log('Sauvik --- AuthProvider initialized with user:', user, 'loading:', loading);
 
   useEffect(() => {
     console.log('Sauvik --- Auth context useEffect called');
@@ -15,16 +17,22 @@ export function AuthProvider({ children, navigate }) {
 
   const checkAuthStatus = async () => {
     try {
+      console.log('Sauvik --- Checking auth status...');
       const response = await api.get('/me/summary');
+      console.log('Sauvik --- Auth status response:', response.data);
       if (response.data.role !== 'ADMIN') {
+        console.log('Sauvik --- User is not admin, clearing user');
         setUser(null);
         return;
       }
+      console.log('Sauvik --- User is admin, setting user');
       setUser(response.data);
     } catch (error) {
+      console.log('Sauvik --- Auth check failed:', error.response?.status, error.response?.data);
       // User not authenticated, clear any stale state
       setUser(null);
     } finally {
+      console.log('Sauvik --- Setting loading to false and initial check complete');
       setLoading(false);
       setInitialCheckComplete(); // Tell API interceptor that initial check is done
       
@@ -43,14 +51,20 @@ export function AuthProvider({ children, navigate }) {
   };
 
   function login({ expiresInSec, user }) {
+    console.log('Sauvik --- Login called with user:', user);
+    console.log('Sauvik --- Login called with expiresInSec:', expiresInSec);
     setUser(user);
+    console.log('Sauvik --- User state updated in login function');
     // No need to manage token manually, it's in cookies
   }
 
   async function logout() {
+    console.log('Sauvik --- Logout function called');
     try {
       await api.post('/auth/logout');
+      console.log('Sauvik --- Logout API call successful');
     } catch (error) {
+      console.log('Sauvik --- Logout API call failed:', error);
       // Ignore logout errors
     }
     
@@ -79,6 +93,7 @@ export function AuthProvider({ children, navigate }) {
     });
     
     // Reset auth state
+    console.log('Sauvik --- Clearing user state and navigating to login');
     setUser(null);
     
     // Navigate to admin login

@@ -12,10 +12,18 @@ export default function Login() {
   const navigate = useNavigate();
   const submit = async (e) => {
     e.preventDefault(); setError('');
+    console.log('Sauvik --- Login form submitted with email:', email);
     try {
+      console.log('Sauvik --- Making login API call...');
       const r = await api.post('/auth/login', { email, password });
-      if (r.data.user.role !== 'ADMIN') throw new Error('Not an admin');
+      console.log('Sauvik --- Login API response:', r.data);
+      if (r.data.user.role !== 'ADMIN') {
+        console.log('Sauvik --- User is not admin, role:', r.data.user.role);
+        throw new Error('Not an admin');
+      }
+      console.log('Sauvik --- User is admin, calling login function');
       login(r.data);
+      console.log('Sauvik --- Navigating to dashboard');
       navigate('/');
     } catch (e) { 
       console.error('Login error:', e);
