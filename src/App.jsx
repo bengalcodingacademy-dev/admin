@@ -14,6 +14,7 @@ import Users from "./pages/Users";
 import Testimonials from "./pages/Testimonials";
 import YouTubeVideos from "./pages/YouTubeVideos";
 import MeetingRequests from "./pages/MeetingRequests";
+import UniqueVisitors from "./pages/UniqueVisitors";
 
 function Protected({ children }) {
   const { user, loading } = useAuth();
@@ -62,6 +63,7 @@ export default function App() {
                   <Route path="testimonials" element={<Testimonials />} />
                   <Route path="youtube-videos" element={<YouTubeVideos />} />
                   <Route path="meeting-requests" element={<MeetingRequests />} />
+                  <Route path="unique-visitors" element={<UniqueVisitors />} />
                   <Route path="*" element={<Navigate to="/" />} />
                 </Routes>
               </Layout>
