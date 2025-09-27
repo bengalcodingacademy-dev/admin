@@ -725,10 +725,33 @@ export default function Courses() {
                   }}
                   config={{
                     toolbar: ['heading', '|', 'bold', 'italic', 'link', 'bulletedList', 'numberedList', '|', 'outdent', 'indent', '|', 'blockQuote', 'insertTable', 'undo', 'redo'],
-                    placeholder: 'Enter detailed course description...'
+                    placeholder: 'Enter detailed course description...',
+                    ui: {
+                      viewportOffset: {
+                        top: 60
+                      }
+                    },
+                    contentStyles: `
+                      .ck-editor__editable {
+                        background: #ffffff !important;
+                        color: #000000 !important;
+                      }
+                      .ck-editor__editable * {
+                        color: #000000 !important;
+                      }
+                      .ck-editor__editable p {
+                        color: #000000 !important;
+                      }
+                      .ck-editor__editable div {
+                        color: #000000 !important;
+                      }
+                      .ck-editor__editable span {
+                        color: #000000 !important;
+                      }
+                    `
                   }}
                   onReady={(editor) => {
-                    // Apply light theme styling
+                    // Apply aggressive styling to force black text
                     const editorElement = editor.ui.getEditableElement();
                     const toolbarElement = editor.ui.view.toolbar.element;
                     
@@ -737,6 +760,64 @@ export default function Courses() {
                       editorElement.style.color = '#000000';
                       editorElement.style.border = '1px solid #d1d5db';
                       editorElement.style.minHeight = '200px';
+                      
+                      // Inject CSS directly into the document head
+                      const styleId = 'ckeditor-black-text-fix-' + Date.now();
+                      let existingStyle = document.getElementById(styleId);
+                      if (!existingStyle) {
+                        existingStyle = document.createElement('style');
+                        existingStyle.id = styleId;
+                        existingStyle.textContent = `
+                          .ck-editor__editable {
+                            color: #000000 !important;
+                            background-color: #ffffff !important;
+                          }
+                          .ck-editor__editable * {
+                            color: #000000 !important;
+                          }
+                          .ck-editor__editable p,
+                          .ck-editor__editable div,
+                          .ck-editor__editable span,
+                          .ck-editor__editable h1,
+                          .ck-editor__editable h2,
+                          .ck-editor__editable h3,
+                          .ck-editor__editable h4,
+                          .ck-editor__editable h5,
+                          .ck-editor__editable h6,
+                          .ck-editor__editable li,
+                          .ck-editor__editable td,
+                          .ck-editor__editable th {
+                            color: #000000 !important;
+                          }
+                        `;
+                        document.head.appendChild(existingStyle);
+                      }
+                      
+                      // Force all existing elements to be black
+                      const forceBlackText = () => {
+                        const allElements = editorElement.querySelectorAll('*');
+                        allElements.forEach(el => {
+                          el.style.color = '#000000';
+                          el.style.backgroundColor = 'transparent';
+                        });
+                      };
+                      
+                      // Apply immediately
+                      forceBlackText();
+                      
+                      // Set up observer to ensure text stays black
+                      const observer = new MutationObserver(() => {
+                        forceBlackText();
+                      });
+                      observer.observe(editorElement, { 
+                        childList: true, 
+                        subtree: true, 
+                        attributes: true, 
+                        attributeFilter: ['style', 'class'] 
+                      });
+                      
+                      // Also listen for editor changes
+                      editor.model.document.on('change', forceBlackText);
                     }
                     
                     if (toolbarElement) {
@@ -770,10 +851,33 @@ export default function Courses() {
                   }}
                   config={{
                     toolbar: ['heading', '|', 'bold', 'italic', 'link', 'bulletedList', 'numberedList', '|', 'outdent', 'indent', '|', 'blockQuote', 'insertTable', 'undo', 'redo'],
-                    placeholder: 'Enter detailed course content...'
+                    placeholder: 'Enter detailed course content...',
+                    ui: {
+                      viewportOffset: {
+                        top: 60
+                      }
+                    },
+                    contentStyles: `
+                      .ck-editor__editable {
+                        background: #ffffff !important;
+                        color: #000000 !important;
+                      }
+                      .ck-editor__editable * {
+                        color: #000000 !important;
+                      }
+                      .ck-editor__editable p {
+                        color: #000000 !important;
+                      }
+                      .ck-editor__editable div {
+                        color: #000000 !important;
+                      }
+                      .ck-editor__editable span {
+                        color: #000000 !important;
+                      }
+                    `
                   }}
                   onReady={(editor) => {
-                    // Apply light theme styling
+                    // Apply aggressive styling to force black text
                     const editorElement = editor.ui.getEditableElement();
                     const toolbarElement = editor.ui.view.toolbar.element;
                     
@@ -782,6 +886,64 @@ export default function Courses() {
                       editorElement.style.color = '#000000';
                       editorElement.style.border = '1px solid #d1d5db';
                       editorElement.style.minHeight = '200px';
+                      
+                      // Inject CSS directly into the document head
+                      const styleId = 'ckeditor-black-text-fix-' + Date.now();
+                      let existingStyle = document.getElementById(styleId);
+                      if (!existingStyle) {
+                        existingStyle = document.createElement('style');
+                        existingStyle.id = styleId;
+                        existingStyle.textContent = `
+                          .ck-editor__editable {
+                            color: #000000 !important;
+                            background-color: #ffffff !important;
+                          }
+                          .ck-editor__editable * {
+                            color: #000000 !important;
+                          }
+                          .ck-editor__editable p,
+                          .ck-editor__editable div,
+                          .ck-editor__editable span,
+                          .ck-editor__editable h1,
+                          .ck-editor__editable h2,
+                          .ck-editor__editable h3,
+                          .ck-editor__editable h4,
+                          .ck-editor__editable h5,
+                          .ck-editor__editable h6,
+                          .ck-editor__editable li,
+                          .ck-editor__editable td,
+                          .ck-editor__editable th {
+                            color: #000000 !important;
+                          }
+                        `;
+                        document.head.appendChild(existingStyle);
+                      }
+                      
+                      // Force all existing elements to be black
+                      const forceBlackText = () => {
+                        const allElements = editorElement.querySelectorAll('*');
+                        allElements.forEach(el => {
+                          el.style.color = '#000000';
+                          el.style.backgroundColor = 'transparent';
+                        });
+                      };
+                      
+                      // Apply immediately
+                      forceBlackText();
+                      
+                      // Set up observer to ensure text stays black
+                      const observer = new MutationObserver(() => {
+                        forceBlackText();
+                      });
+                      observer.observe(editorElement, { 
+                        childList: true, 
+                        subtree: true, 
+                        attributes: true, 
+                        attributeFilter: ['style', 'class'] 
+                      });
+                      
+                      // Also listen for editor changes
+                      editor.model.document.on('change', forceBlackText);
                     }
                     
                     if (toolbarElement) {
@@ -1024,7 +1186,30 @@ export default function Courses() {
                           }}
                           config={{
                             toolbar: ['heading', '|', 'bold', 'italic', 'link', 'bulletedList', 'numberedList', '|', 'outdent', 'indent', '|', 'blockQuote', 'insertTable', 'undo', 'redo'],
-                            placeholder: 'Enter module content...'
+                            placeholder: 'Enter module content...',
+                            ui: {
+                              viewportOffset: {
+                                top: 60
+                              }
+                            },
+                            contentStyles: `
+                              .ck-editor__editable {
+                                background: #ffffff !important;
+                                color: #000000 !important;
+                              }
+                              .ck-editor__editable * {
+                                color: #000000 !important;
+                              }
+                              .ck-editor__editable p {
+                                color: #000000 !important;
+                              }
+                              .ck-editor__editable div {
+                                color: #000000 !important;
+                              }
+                              .ck-editor__editable span {
+                                color: #000000 !important;
+                              }
+                            `
                           }}
                           onReady={(editor) => {
                             // Apply light theme styling
@@ -1036,6 +1221,31 @@ export default function Courses() {
                               editorElement.style.color = '#000000';
                               editorElement.style.border = '1px solid #d1d5db';
                               editorElement.style.minHeight = '200px';
+                              
+                              // Force all text elements to be black
+                              const style = document.createElement('style');
+                              style.textContent = `
+                                .ck-editor__editable, .ck-editor__editable * {
+                                  color: #000000 !important;
+                                }
+                              `;
+                              editorElement.appendChild(style);
+                              
+                              // Set up observer to ensure text stays black
+                              const observer = new MutationObserver(() => {
+                                const allElements = editorElement.querySelectorAll('*');
+                                allElements.forEach(el => {
+                                  if (el.style.color && el.style.color !== 'rgb(0, 0, 0)') {
+                                    el.style.color = '#000000';
+                                  }
+                                });
+                              });
+                              observer.observe(editorElement, { 
+                                childList: true, 
+                                subtree: true, 
+                                attributes: true, 
+                                attributeFilter: ['style'] 
+                              });
                             }
                             
                             if (toolbarElement) {
