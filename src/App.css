@@ -111,6 +111,11 @@
 .ck-editor__editable li,
 .ck-editor__editable td,
 .ck-editor__editable th,
+.ck-editor__editable strong,
+.ck-editor__editable em,
+.ck-editor__editable u,
+.ck-editor__editable a,
+.ck-editor__editable blockquote,
 .ck-content p,
 .ck-content div,
 .ck-content span,
@@ -122,12 +127,39 @@
 .ck-content h6,
 .ck-content li,
 .ck-content td,
-.ck-content th {
+.ck-content th,
+.ck-content strong,
+.ck-content em,
+.ck-content u,
+.ck-content a,
+.ck-content blockquote {
   color: #000000 !important;
 }
 
 /* Ensure all text content is black */
 .ck-editor__editable * {
+  color: #000000 !important;
+}
+
+/* Additional specific selectors to ensure black text */
+.ck-editor__editable.ck-focused {
+  color: #000000 !important;
+}
+
+.ck-editor__editable.ck-focused * {
+  color: #000000 !important;
+}
+
+/* Override any potential white text styles */
+.ck-editor__editable[style*="color: white"],
+.ck-editor__editable[style*="color: #fff"],
+.ck-editor__editable[style*="color: #ffffff"] {
+  color: #000000 !important;
+}
+
+.ck-editor__editable[style*="color: white"] *,
+.ck-editor__editable[style*="color: #fff"] *,
+.ck-editor__editable[style*="color: #ffffff"] * {
   color: #000000 !important;
 }
 
@@ -207,4 +239,51 @@
 
 .ck-editor__main .ck-dropdown__button .ck-button__icon {
   color: #ffffff !important;
+}
+
+/* ULTIMATE FIX - Override ALL possible CKEditor text colors */
+.ck-editor__editable,
+.ck-editor__editable *,
+.ck-editor__editable p,
+.ck-editor__editable div,
+.ck-editor__editable span,
+.ck-editor__editable h1,
+.ck-editor__editable h2,
+.ck-editor__editable h3,
+.ck-editor__editable h4,
+.ck-editor__editable h5,
+.ck-editor__editable h6,
+.ck-editor__editable li,
+.ck-editor__editable td,
+.ck-editor__editable th,
+.ck-editor__editable strong,
+.ck-editor__editable em,
+.ck-editor__editable u,
+.ck-editor__editable a,
+.ck-editor__editable blockquote,
+.ck-editor__editable code,
+.ck-editor__editable pre,
+.ck-editor__editable mark {
+  color: #000000 !important;
+  background-color: transparent !important;
+}
+
+/* Override any inline styles */
+.ck-editor__editable[style*="color"] * {
+  color: #000000 !important;
+}
+
+/* Force text color on focus */
+.ck-editor__editable:focus,
+.ck-editor__editable:focus * {
+  color: #000000 !important;
+}
+
+/* Override any potential inherited colors */
+.ck-editor__editable * {
+  color: inherit !important;
+}
+
+.ck-editor__editable {
+  color: #000000 !important;
 }
