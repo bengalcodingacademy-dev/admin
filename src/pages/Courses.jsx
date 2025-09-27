@@ -714,7 +714,7 @@ export default function Courses() {
               className="mb-8"
             >
               <h2 className="text-2xl font-bold text-white mb-4">About Course</h2>
-              <div className="bg-bca-gray-800 rounded-lg ck-editor-dark">
+              <div className="bg-white rounded-lg border border-gray-300">
                 <CKEditor
                   editor={ClassicEditor}
                   data={form.aboutCourse}
@@ -728,33 +728,21 @@ export default function Courses() {
                     placeholder: 'Enter detailed course description...'
                   }}
                   onReady={(editor) => {
-                    // Ensure black text color in editor content
+                    // Apply light theme styling
                     const editorElement = editor.ui.getEditableElement();
+                    const toolbarElement = editor.ui.view.toolbar.element;
                     
                     if (editorElement) {
-                      // Set text color to black
+                      editorElement.style.backgroundColor = '#ffffff';
                       editorElement.style.color = '#000000';
-                      
-                      // Apply black text to all text elements
-                      const textElements = editorElement.querySelectorAll('p, div, span, h1, h2, h3, h4, h5, h6, li, td, th');
-                      textElements.forEach(el => {
-                        el.style.color = '#000000';
-                      });
-                      
-                      // Set up observer to apply black text to new content
-                      const observer = new MutationObserver(() => {
-                        const newTextElements = editorElement.querySelectorAll('p, div, span, h1, h2, h3, h4, h5, h6, li, td, th');
-                        newTextElements.forEach(el => {
-                          if (el.style.color !== '#000000') {
-                            el.style.color = '#000000';
-                          }
-                        });
-                      });
-                      
-                      observer.observe(editorElement, {
-                        childList: true,
-                        subtree: true
-                      });
+                      editorElement.style.border = '1px solid #d1d5db';
+                      editorElement.style.minHeight = '200px';
+                    }
+                    
+                    if (toolbarElement) {
+                      toolbarElement.style.backgroundColor = '#f9fafb';
+                      toolbarElement.style.borderBottom = '1px solid #e5e7eb';
+                      toolbarElement.style.borderTop = '1px solid #e5e7eb';
                     }
                   }}
                 />
@@ -771,7 +759,7 @@ export default function Courses() {
               <h2 className="text-2xl font-bold text-white mb-4">
                 Long Description <span className="text-red-400">*</span>
               </h2>
-              <div className="bg-bca-gray-800 rounded-lg ck-editor-dark">
+              <div className="bg-white rounded-lg border border-gray-300">
                 <CKEditor
                   editor={ClassicEditor}
                   data={form.longDesc}
@@ -785,33 +773,21 @@ export default function Courses() {
                     placeholder: 'Enter detailed course content...'
                   }}
                   onReady={(editor) => {
-                    // Ensure black text color in editor content
+                    // Apply light theme styling
                     const editorElement = editor.ui.getEditableElement();
+                    const toolbarElement = editor.ui.view.toolbar.element;
                     
                     if (editorElement) {
-                      // Set text color to black
+                      editorElement.style.backgroundColor = '#ffffff';
                       editorElement.style.color = '#000000';
-                      
-                      // Apply black text to all text elements
-                      const textElements = editorElement.querySelectorAll('p, div, span, h1, h2, h3, h4, h5, h6, li, td, th');
-                      textElements.forEach(el => {
-                        el.style.color = '#000000';
-                      });
-                      
-                      // Set up observer to apply black text to new content
-                      const observer = new MutationObserver(() => {
-                        const newTextElements = editorElement.querySelectorAll('p, div, span, h1, h2, h3, h4, h5, h6, li, td, th');
-                        newTextElements.forEach(el => {
-                          if (el.style.color !== '#000000') {
-                            el.style.color = '#000000';
-                          }
-                        });
-                      });
-                      
-                      observer.observe(editorElement, {
-                        childList: true,
-                        subtree: true
-                      });
+                      editorElement.style.border = '1px solid #d1d5db';
+                      editorElement.style.minHeight = '200px';
+                    }
+                    
+                    if (toolbarElement) {
+                      toolbarElement.style.backgroundColor = '#f9fafb';
+                      toolbarElement.style.borderBottom = '1px solid #e5e7eb';
+                      toolbarElement.style.borderTop = '1px solid #e5e7eb';
                     }
                   }}
                 />
@@ -1038,7 +1014,7 @@ export default function Courses() {
                         </button>
                       </div>
                       
-                      <div className="bg-bca-gray-700 rounded-lg ck-editor-dark">
+                      <div className="bg-white rounded-lg border border-gray-300">
                         <CKEditor
                           editor={ClassicEditor}
                           data={module.content}
@@ -1051,19 +1027,21 @@ export default function Courses() {
                             placeholder: 'Enter module content...'
                           }}
                           onReady={(editor) => {
-                            // Apply dark theme styling
+                            // Apply light theme styling
                             const editorElement = editor.ui.getEditableElement();
                             const toolbarElement = editor.ui.view.toolbar.element;
                             
                             if (editorElement) {
-                              editorElement.style.backgroundColor = '#1f2937';
-                              editorElement.style.color = '#f9fafb';
-                              editorElement.style.border = '1px solid #374151';
+                              editorElement.style.backgroundColor = '#ffffff';
+                              editorElement.style.color = '#000000';
+                              editorElement.style.border = '1px solid #d1d5db';
+                              editorElement.style.minHeight = '200px';
                             }
                             
                             if (toolbarElement) {
-                              toolbarElement.style.backgroundColor = '#374151';
-                              toolbarElement.style.borderBottom = '1px solid #4b5563';
+                              toolbarElement.style.backgroundColor = '#f9fafb';
+                              toolbarElement.style.borderBottom = '1px solid #e5e7eb';
+                              toolbarElement.style.borderTop = '1px solid #e5e7eb';
                             }
                           }}
                         />

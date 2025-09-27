@@ -9,8 +9,8 @@ import CourseContent from "./pages/CourseContent";
 import Webinars from "./pages/Webinars";
 import Announcements from "./pages/Announcements";
 import Sales from "./pages/Sales";
+import PaymentDetails from "./pages/PaymentDetails";
 import Users from "./pages/Users";
-import Transactions from "./pages/Transactions";
 import Testimonials from "./pages/Testimonials";
 import YouTubeVideos from "./pages/YouTubeVideos";
 import MeetingRequests from "./pages/MeetingRequests";
@@ -54,9 +54,11 @@ export default function App() {
                   <Route path="course-content" element={<CourseContent />} />
                   <Route path="webinars" element={<Webinars />} />
                   <Route path="announcements" element={<Announcements />} />
-                  <Route path="transactions" element={<Transactions />} />
-                  <Route path="sales" element={<Sales />} />
-                  <Route path="users" element={<Users />} />
+                    <Route path="sales" element={<Sales />} />
+                    <Route path="payment-details/:year" element={<PaymentDetails />} />
+                    <Route path="payment-details/:year/:month" element={<PaymentDetails />} />
+                    <Route path="payment-details/:year/:month/:day" element={<PaymentDetails />} />
+                    <Route path="users" element={<Users />} />
                   <Route path="testimonials" element={<Testimonials />} />
                   <Route path="youtube-videos" element={<YouTubeVideos />} />
                   <Route path="meeting-requests" element={<MeetingRequests />} />
