@@ -17,7 +17,22 @@ export default function Login() {
       if (r.data.user.role !== 'ADMIN') throw new Error('Not an admin');
       login(r.data);
       navigate('/');
-    } catch (e) { setError(e?.response?.data?.error || e.message || 'Login failed'); }
+    } catch (e) { 
+      console.error('Login error:', e);
+      let errorMessage = 'Login failed';
+      
+      if (e?.response?.data?.error?.message) {
+        errorMessage = String(e.response.data.error.message);
+      } else if (e?.response?.data?.message) {
+        errorMessage = String(e.response.data.message);
+      } else if (e?.response?.data?.error) {
+        errorMessage = String(e.response.data.error);
+      } else if (e?.message) {
+        errorMessage = String(e.message);
+      }
+      
+      setError(errorMessage);
+    }
   };
   return (
     <div className="max-w-md mx-auto px-4 py-8 md:py-10">
