@@ -29,10 +29,17 @@ export default function UniqueVisitors() {
 
   const loadStats = async () => {
     try {
+      console.log('Loading visitor stats...');
       const response = await api.get('/visitors/stats');
+      console.log('Visitor stats response:', response.data);
       setStats(response.data || {});
     } catch (error) {
       console.error('Error loading visitor stats:', error);
+      console.error('Error details:', {
+        message: error.message,
+        status: error.response?.status,
+        data: error.response?.data
+      });
       setError('Failed to load visitor statistics');
       setStats({ today: 0, thisWeek: 0, thisMonth: 0, allTime: 0 });
     }
@@ -42,10 +49,17 @@ export default function UniqueVisitors() {
     try {
       setLoading(true);
       setError('');
+      console.log(`Loading analytics for ${selectedYear}-${selectedMonth}...`);
       const response = await api.get(`/visitors/analytics?year=${selectedYear}&month=${selectedMonth}`);
+      console.log('Analytics response:', response.data);
       setDailyAnalytics(response.data?.analytics || []);
     } catch (error) {
       console.error('Error loading visitor analytics:', error);
+      console.error('Error details:', {
+        message: error.message,
+        status: error.response?.status,
+        data: error.response?.data
+      });
       setError('Failed to load visitor analytics');
       setDailyAnalytics([]);
     } finally {
