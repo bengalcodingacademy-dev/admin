@@ -354,49 +354,57 @@ export default function Courses() {
       setEditingCourse(course);
       setIsEditing(true);
       
-      // Debug: Log the raw price value from database
-      console.log('Course price from DB:', course.priceRupees, 'Parsed:', parseFloat(course.priceRupees) || 0);
+      // Fetch complete course data from the individual endpoint
+      console.log('Fetching complete course data for ID:', course.id);
+      const response = await api.get(`/admin/courses/${course.id}`);
+      const fullCourseData = response.data;
       
-      // Populate form with course data
+      console.log('Complete course data:', fullCourseData);
+      
+      // Debug: Log the raw price value from database
+      console.log('Course price from DB:', fullCourseData.priceRupees, 'Parsed:', parseFloat(fullCourseData.priceRupees) || 0);
+      
+      // Populate form with complete course data
       setForm({
-        title: course.title || '',
-        slug: course.slug || '',
-        priceRupees: parseFloat(course.priceRupees) || 0,
-        shortDesc: course.shortDesc || '',
-        longDesc: course.longDesc || '',
-        imageUrl: course.imageUrl || '',
-        coupons: course.coupons || [],
-        numberOfModules: course.numberOfModules || 0,
-        modules: course.modulesJson || [],
-        numberOfLectures: course.numberOfLectures || 0,
-        language: course.language || 'bengali',
-        starRating: course.starRating || 4.9,
-        numberOfStudents: course.numberOfStudents || 0,
-        aboutCourse: course.aboutCourse || '',
-        courseIncludes: course.courseIncludes || [],
-        startDate: course.startDate ? new Date(course.startDate).toISOString().split('T')[0] : '',
-        endDate: course.endDate ? new Date(course.endDate).toISOString().split('T')[0] : '',
-        durationMonths: course.durationMonths || 0,
-        monthlyFeeRupees: parseFloat(course.monthlyFeeRupees) || 0,
-        isMonthlyPayment: course.isMonthlyPayment || false,
+        title: fullCourseData.title || '',
+        slug: fullCourseData.slug || '',
+        priceRupees: parseFloat(fullCourseData.priceRupees) || 0,
+        shortDesc: fullCourseData.shortDesc || '',
+        longDesc: fullCourseData.longDesc || '',
+        imageUrl: fullCourseData.imageUrl || '',
+        coupons: fullCourseData.coupons || [],
+        numberOfModules: fullCourseData.numberOfModules || 0,
+        modules: fullCourseData.modulesJson || [],
+        numberOfLectures: fullCourseData.numberOfLectures || 0,
+        language: fullCourseData.language || 'bengali',
+        starRating: fullCourseData.starRating || 4.9,
+        numberOfStudents: fullCourseData.numberOfStudents || 0,
+        aboutCourse: fullCourseData.aboutCourse || '',
+        courseIncludes: fullCourseData.courseIncludes || [],
+        startDate: fullCourseData.startDate ? new Date(fullCourseData.startDate).toISOString().split('T')[0] : '',
+        endDate: fullCourseData.endDate ? new Date(fullCourseData.endDate).toISOString().split('T')[0] : '',
+        durationMonths: fullCourseData.durationMonths || 0,
+        monthlyFeeRupees: parseFloat(fullCourseData.monthlyFeeRupees) || 0,
+        isMonthlyPayment: fullCourseData.isMonthlyPayment || false,
         modeOfCourse: 'LIVE + Recordings',
         classRecordingProvided: 'Yes [HD Quality]',
         doubtClasses: '20 Doubt Sessions',
         courseValidity: '2 Years',
-        programmingLanguage: 'C++',
-        classSchedule: '[Monday, Wednesday, Saturday, Sunday]',
-        classTimings: '8:30pm - 11pm'
+        programmingLanguage: fullCourseData.programmingLanguage || 'C++',
+        classSchedule: fullCourseData.classSchedule || '[Monday, Wednesday, Saturday, Sunday]',
+        classTimings: fullCourseData.classTimings || '8:30pm - 11pm'
       });
       
       // Set testimonials if any
-      if (course.testimonials && course.testimonials.length > 0) {
-        setTestimonials(course.testimonials);
+      if (fullCourseData.testimonials && fullCourseData.testimonials.length > 0) {
+        setTestimonials(fullCourseData.testimonials);
       }
       
       // Scroll to form
       document.getElementById('course-form')?.scrollIntoView({ behavior: 'smooth' });
     } catch (error) {
       console.error('Error loading course for editing:', error);
+      setError('Failed to load course data for editing. Please try again.');
     }
   };
 
