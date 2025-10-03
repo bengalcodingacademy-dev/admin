@@ -15,6 +15,7 @@ import Testimonials from "./pages/Testimonials";
 import YouTubeVideos from "./pages/YouTubeVideos";
 import MeetingRequests from "./pages/MeetingRequests";
 import UniqueVisitors from "./pages/UniqueVisitors";
+import DML from "./pages/DML";
 
 function Protected({ children }) {
   const { user, loading } = useAuth();
@@ -22,7 +23,7 @@ function Protected({ children }) {
     return (
       <div className="min-h-screen bg-bca-black flex items-center justify-center">
         <video
-          src="https://sauvikbcabucket.s3.ap-south-1.amazonaws.com/assets/shimmer.mp4"
+          src="https://d270a3f3iqnh9i.cloudfront.net/assets/shimmer.mp4"
           autoPlay
           loop
           muted
@@ -64,6 +65,7 @@ export default function App() {
                   <Route path="youtube-videos" element={<YouTubeVideos />} />
                   <Route path="meeting-requests" element={<MeetingRequests />} />
                   <Route path="unique-visitors" element={<UniqueVisitors />} />
+                  <Route path="dml" element={<DML />} />
                   <Route path="*" element={<Navigate to="/" />} />
                 </Routes>
               </Layout>
