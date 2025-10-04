@@ -1,9 +1,20 @@
 import { useState, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { motion } from 'framer-motion';
-import { VideoIcon, ArrowLeftIcon } from 'lucide-react';
+// Custom Icons
+const VideoIcon = ({ className }) => (
+  <svg className={className} fill="none" stroke="currentColor" viewBox="0 0 24 24">
+    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 10l4.553-2.276A1 1 0 0121 8.618v6.764a1 1 0 01-1.447.894L15 14M5 18h8a2 2 0 002-2V8a2 2 0 00-2-2H5a2 2 0 00-2 2v8a2 2 0 002 2z" />
+  </svg>
+);
+
+const ArrowLeftIcon = ({ className }) => (
+  <svg className={className} fill="none" stroke="currentColor" viewBox="0 0 24 24">
+    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M10 19l-7-7m0 0l7-7m-7 7h18" />
+  </svg>
+);
 import { api } from '../lib/api';
-import SkeletonCard from '../components/Skeleton';
+import { SkeletonCard } from '../components/Skeleton';
 
 export default function CourseContentManager() {
   const { courseId } = useParams();
@@ -18,6 +29,7 @@ export default function CourseContentManager() {
   const [editingContent, setEditingContent] = useState(null);
   const [error, setError] = useState('');
   const [success, setSuccess] = useState('');
+  const [refreshing, setRefreshing] = useState(false);
 
   const [form, setForm] = useState({
     topicName: '',
@@ -52,23 +64,35 @@ export default function CourseContentManager() {
     }
   };
 
-  const loadContent = async () => {
+  const loadContent = async (forceRefresh = false) => {
     if (!course) {
       console.log('No course loaded, skipping content load');
       return;
     }
     
     try {
-      console.log('Loading content for course:', course.id, 'month:', selectedMonth);
-      setLoading(true);
-      const response = await api.get(`/course-content/course/${course.id}/month/${selectedMonth}`);
+      console.log('Loading content for course:', course.id, 'month:', selectedMonth, 'forceRefresh:', forceRefresh);
+      if (forceRefresh) {
+        setRefreshing(true);
+      } else {
+        setLoading(true);
+      }
+      
+      // Add cache-busting parameter if force refresh
+      const url = forceRefresh 
+        ? `/course-content/course/${course.id}/month/${selectedMonth}?t=${Date.now()}`
+        : `/course-content/course/${course.id}/month/${selectedMonth}`;
+        
+      const response = await api.get(url);
       console.log('Content loaded successfully:', response.data);
       setContent(response.data);
+      setError(''); // Clear any previous errors
     } catch (error) {
       console.error('Error loading content:', error);
       setError('Failed to load content');
     } finally {
       setLoading(false);
+      setRefreshing(false);
     }
   };
 
@@ -141,37 +165,17 @@ export default function CourseContentManager() {
       console.log('Deleting content with ID:', id);
       
       // Store the current content for potential rollback
-      const previousContent = content;
+      const previousContent = [...content];
       
       // Optimistically remove from UI first
-      setContent(prevContent => {
-        const filtered = prevContent.filter(item => item.id !== id);
-        console.log('Optimistic update - removed item:', id, 'New content count:', filtered.length);
-        return filtered;
-      });
+      const updatedContent = content.filter(item => item.id !== id);
+      setContent(updatedContent);
+      console.log('Optimistic update - removed item:', id, 'New content count:', updatedContent.length);
       
       await api.delete(`/course-content/${id}`);
       console.log('Content deleted successfully from backend');
       setSuccess('Content deleted successfully!');
       setError(''); // Clear any previous errors
-      
-      // Don't call loadContent() immediately - let the optimistic update work
-      // Only refresh if there's a discrepancy
-      setTimeout(async () => {
-        try {
-          const response = await api.get(`/course-content/course/${course.id}/month/${selectedMonth}`);
-          const serverContent = response.data;
-          console.log('Server content after delete:', serverContent.length, 'items');
-          
-          // Only update if there's a mismatch
-          if (serverContent.length !== content.length) {
-            console.log('Content count mismatch, updating from server');
-            setContent(serverContent);
-          }
-        } catch (error) {
-          console.error('Error verifying delete:', error);
-        }
-      }, 1000);
       
       // Clear success message after a delay
       setTimeout(() => {
@@ -243,20 +247,37 @@ export default function CourseContentManager() {
           animate={{ opacity: 1, y: 0 }}
           className="mb-8"
         >
-          <div className="flex items-center gap-4 mb-4">
+          <div className="flex items-center justify-between mb-4">
+            <div className="flex items-center gap-4">
+              <button
+                onClick={() => navigate('/course-content')}
+                className="p-2 bg-bca-gray-700 hover:bg-bca-gray-600 rounded-lg transition-colors"
+              >
+                <ArrowLeftIcon className="w-5 h-5 text-white" />
+              </button>
+              <div className="p-2 bg-bca-gold/20 rounded-lg">
+                <VideoIcon className="w-6 h-6 text-bca-gold" />
+              </div>
+              <div>
+                <h1 className="text-3xl font-bold text-white">Manage Content</h1>
+                <p className="text-bca-gray-400">{course.title}</p>
+              </div>
+            </div>
             <button
-              onClick={() => navigate('/course-content')}
-              className="p-2 bg-bca-gray-700 hover:bg-bca-gray-600 rounded-lg transition-colors"
+              onClick={() => loadContent(true)}
+              disabled={refreshing}
+              className="px-4 py-2 bg-bca-cyan/20 hover:bg-bca-cyan/30 border border-bca-cyan/40 rounded-lg text-bca-cyan transition-colors flex items-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed"
             >
-              <ArrowLeftIcon className="w-5 h-5 text-white" />
+              <svg 
+                className={`w-4 h-4 ${refreshing ? 'animate-spin' : ''}`} 
+                fill="none" 
+                stroke="currentColor" 
+                viewBox="0 0 24 24"
+              >
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
+              </svg>
+              {refreshing ? 'Refreshing...' : 'Refresh'}
             </button>
-            <div className="p-2 bg-bca-gold/20 rounded-lg">
-              <VideoIcon className="w-6 h-6 text-bca-gold" />
-            </div>
-            <div>
-              <h1 className="text-3xl font-bold text-white">Manage Content</h1>
-              <p className="text-bca-gray-400">{course.title}</p>
-            </div>
           </div>
         </motion.div>
 
@@ -300,6 +321,8 @@ export default function CourseContentManager() {
                       setSelectedMonth(month);
                       setEditingContent(null);
                       setForm({ topicName: '', videoLink: '', githubRepo: '', notes: '', order: 0 });
+                      // Force refresh content when switching months
+                      setTimeout(() => loadContent(true), 100);
                     }}
                     className={`p-3 rounded-lg text-sm font-medium transition-colors ${
                       selectedMonth === month
