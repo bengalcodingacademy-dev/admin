@@ -23,6 +23,12 @@ export default function DML() {
     action: 'activate' // activate, deactivate, delete
   });
 
+  // Interest Status Management Form
+  const [interestStatusForm, setInterestStatusForm] = useState({
+    userEmail: '',
+    interestStatus: 'NOT_INTERESTED' // INTERESTED, NOT_INTERESTED, PURCHASED
+  });
+
   // Courses list for dropdown
   const [courses, setCourses] = useState([]);
   const [loadingCourses, setLoadingCourses] = useState(false);
@@ -88,6 +94,21 @@ export default function DML() {
       setUserForm({ email: '', action: 'activate' });
     } catch (error) {
       showMessage(error.response?.data?.error || 'Failed to manage user', 'error');
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const handleInterestStatusUpdate = async (e) => {
+    e.preventDefault();
+    setLoading(true);
+
+    try {
+      const response = await api.post('/admin/dml/update-interest-status', interestStatusForm);
+      showMessage(`User interest status updated to ${interestStatusForm.interestStatus}!`, 'success');
+      setInterestStatusForm({ userEmail: '', interestStatus: 'NOT_INTERESTED' });
+    } catch (error) {
+      showMessage(error.response?.data?.error || 'Failed to update interest status', 'error');
     } finally {
       setLoading(false);
     }
@@ -319,6 +340,61 @@ export default function DML() {
                 className="w-full md:w-auto px-6 py-3 bg-gradient-to-r from-bca-cyan to-bca-gold text-black font-semibold rounded-lg hover:from-bca-cyan/90 hover:to-bca-gold/90 transition-all duration-300 disabled:opacity-50 disabled:cursor-not-allowed"
               >
                 {loading ? 'Processing...' : 'Execute Action'}
+              </button>
+            </form>
+          </div>
+
+          {/* Interest Status Management */}
+          <div className="bg-gradient-to-br from-bca-gray-800 to-bca-gray-900 rounded-2xl p-6 border border-bca-gray-700">
+            <div className="flex items-center gap-3 mb-6">
+              <div className="w-12 h-12 bg-gradient-to-br from-bca-gold to-bca-cyan rounded-xl flex items-center justify-center">
+                <span className="text-2xl">📊</span>
+              </div>
+              <div>
+                <h2 className="text-xl font-bold text-white">Interest Status Management</h2>
+                <p className="text-bca-gray-400 text-sm">
+                  Update user interest status (INTERESTED, NOT_INTERESTED, PURCHASED)
+                </p>
+              </div>
+            </div>
+
+            <form onSubmit={handleInterestStatusUpdate} className="space-y-4">
+              <div className="grid md:grid-cols-2 gap-4">
+                <div>
+                  <label className="block text-sm font-medium text-bca-gray-300 mb-2">
+                    User Email *
+                  </label>
+                  <input
+                    type="email"
+                    required
+                    value={interestStatusForm.userEmail}
+                    onChange={(e) => setInterestStatusForm({...interestStatusForm, userEmail: e.target.value})}
+                    className="w-full px-4 py-3 bg-bca-gray-700 border border-bca-gray-600 rounded-lg text-white focus:border-bca-cyan focus:outline-none"
+                    placeholder="user@example.com"
+                  />
+                </div>
+                <div>
+                  <label className="block text-sm font-medium text-bca-gray-300 mb-2">
+                    Interest Status *
+                  </label>
+                  <select
+                    value={interestStatusForm.interestStatus}
+                    onChange={(e) => setInterestStatusForm({...interestStatusForm, interestStatus: e.target.value})}
+                    className="w-full px-4 py-3 bg-bca-gray-700 border border-bca-gray-600 rounded-lg text-white focus:border-bca-cyan focus:outline-none"
+                  >
+                    <option value="INTERESTED">INTERESTED</option>
+                    <option value="NOT_INTERESTED">NOT_INTERESTED</option>
+                    <option value="PURCHASED">PURCHASED</option>
+                  </select>
+                </div>
+              </div>
+
+              <button
+                type="submit"
+                disabled={loading}
+                className="w-full md:w-auto px-6 py-3 bg-gradient-to-r from-bca-cyan to-bca-gold text-black font-semibold rounded-lg hover:from-bca-cyan/90 hover:to-bca-gold/90 transition-all duration-300 disabled:opacity-50 disabled:cursor-not-allowed"
+              >
+                {loading ? 'Updating...' : 'Update Interest Status'}
               </button>
             </form>
           </div>
