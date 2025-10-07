@@ -17,6 +17,8 @@ import YouTubeVideos from "./pages/YouTubeVideos";
 import MeetingRequests from "./pages/MeetingRequests";
 import UniqueVisitors from "./pages/UniqueVisitors";
 import DML from "./pages/DML";
+import QuizExam from "./pages/QuizExam";
+import QuizAnalytics from "./pages/QuizAnalytics";
 
 function Protected({ children }) {
   const { user, loading } = useAuth();
@@ -68,6 +70,8 @@ export default function App() {
                   <Route path="meeting-requests" element={<MeetingRequests />} />
                   <Route path="unique-visitors" element={<UniqueVisitors />} />
                   <Route path="dml" element={<DML />} />
+                  <Route path="quiz-exams" element={<QuizExam />} />
+                  <Route path="quiz-analytics" element={<QuizAnalytics />} />
                   <Route path="*" element={<Navigate to="/" />} />
                 </Routes>
               </Layout>
