@@ -57,6 +57,16 @@
   border-top: none !important;
 }
 
+/* Quiz form specific - dark background with white text */
+.quiz-form .ck-editor__editable,
+.quiz-form .ck-editor__editable_inline,
+.quiz-form .ck-content {
+  background-color: #1f2937 !important;
+  color: #ffffff !important;
+  border: 1px solid #4b5563 !important;
+  border-top: none !important;
+}
+
 /* All text elements in editor should be black */
 .ck-editor__editable p,
 .ck-editor__editable div,
@@ -95,9 +105,52 @@
   color: #000000 !important;
 }
 
+/* Quiz form specific - all text elements should be white */
+.quiz-form .ck-editor__editable p,
+.quiz-form .ck-editor__editable div,
+.quiz-form .ck-editor__editable span,
+.quiz-form .ck-editor__editable h1,
+.quiz-form .ck-editor__editable h2,
+.quiz-form .ck-editor__editable h3,
+.quiz-form .ck-editor__editable h4,
+.quiz-form .ck-editor__editable h5,
+.quiz-form .ck-editor__editable h6,
+.quiz-form .ck-editor__editable li,
+.quiz-form .ck-editor__editable td,
+.quiz-form .ck-editor__editable th,
+.quiz-form .ck-editor__editable strong,
+.quiz-form .ck-editor__editable em,
+.quiz-form .ck-editor__editable u,
+.quiz-form .ck-editor__editable a,
+.quiz-form .ck-editor__editable blockquote,
+.quiz-form .ck-content p,
+.quiz-form .ck-content div,
+.quiz-form .ck-content span,
+.quiz-form .ck-content h1,
+.quiz-form .ck-content h2,
+.quiz-form .ck-content h3,
+.quiz-form .ck-content h4,
+.quiz-form .ck-content h5,
+.quiz-form .ck-content h6,
+.quiz-form .ck-content li,
+.quiz-form .ck-content td,
+.quiz-form .ck-content th,
+.quiz-form .ck-content strong,
+.quiz-form .ck-content em,
+.quiz-form .ck-content u,
+.quiz-form .ck-content a,
+.quiz-form .ck-content blockquote {
+  color: #ffffff !important;
+}
+
 /* Ensure all text content is black */
 .ck-editor__editable * {
   color: #000000 !important;
+}
+
+/* Quiz form specific - ensure all text content is white */
+.quiz-form .ck-editor__editable * {
+  color: #ffffff !important;
 }
 
 /* Additional specific selectors to ensure black text */
@@ -107,6 +160,15 @@
 
 .ck-editor__editable.ck-focused * {
   color: #000000 !important;
+}
+
+/* Quiz form specific - ensure white text on focus */
+.quiz-form .ck-editor__editable.ck-focused {
+  color: #ffffff !important;
+}
+
+.quiz-form .ck-editor__editable.ck-focused * {
+  color: #ffffff !important;
 }
 
 /* Override any potential white text styles */

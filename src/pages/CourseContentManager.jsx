@@ -39,6 +39,8 @@ export default function CourseContentManager() {
     order: 0
   });
 
+
+
   useEffect(() => {
     if (courseId) {
       loadCourse();
@@ -96,6 +98,7 @@ export default function CourseContentManager() {
     }
   };
 
+
   const handleSubmit = async (e) => {
     e.preventDefault();
     console.log('Form submitted!', { form, course, selectedMonth });
@@ -146,6 +149,7 @@ export default function CourseContentManager() {
   };
 
   const handleEdit = (contentItem) => {
+    // Handle regular content editing
     setEditingContent(contentItem);
     setForm({
       topicName: contentItem.topicName,
@@ -194,6 +198,9 @@ export default function CourseContentManager() {
 
   const clearError = () => setError('');
   const clearSuccess = () => setSuccess('');
+
+
+
 
   const generateMonths = (course) => {
     if (!course) return [];
@@ -403,6 +410,7 @@ export default function CourseContentManager() {
                   />
                 </div>
 
+
                 <div className="flex gap-3">
                   <button
                     type="submit"
@@ -427,6 +435,7 @@ export default function CourseContentManager() {
                 </div>
               </form>
             </div>
+
 
             {/* Content List */}
             <div className="bg-bca-gray-800 rounded-xl p-6 border border-bca-gray-700">
@@ -491,6 +500,7 @@ export default function CourseContentManager() {
                           {item.notes && (
                             <p className="text-bca-gray-300 text-sm">{item.notes}</p>
                           )}
+                          
                         </div>
                         
                         <div className="flex gap-2 ml-4">

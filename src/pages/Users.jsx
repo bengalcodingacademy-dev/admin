@@ -9,11 +9,19 @@ export default function Users() {
   const [editing, setEditing] = useState(null);
   const [expandedUser, setExpandedUser] = useState(null);
   const [form, setForm] = useState({ name:'', email:'', role:'STUDENT', age:'', dateOfBirth:'' });
+  const [userStats, setUserStats] = useState(null);
+  const [selectedFilter, setSelectedFilter] = useState('logged-in');
+  const [selectedCourse, setSelectedCourse] = useState(null);
+  const [copyToast, setCopyToast] = useState(null);
   
-  const load = async () => {
+  const load = async (filter = 'logged-in', courseSlug = null) => {
     try {
       setLoading(true);
-      const response = await api.get('/admin/users');
+      const params = new URLSearchParams();
+      if (filter !== 'logged-in') params.append('filter', filter);
+      if (courseSlug) params.append('courseSlug', courseSlug);
+      
+      const response = await api.get(`/admin/users?${params.toString()}`);
       setList(response.data);
     } catch (error) {
       console.error('Error loading users:', error);
@@ -21,8 +29,38 @@ export default function Users() {
       setLoading(false);
     }
   };
+
+  const loadStats = async () => {
+    try {
+      const response = await api.get('/admin/users/stats');
+      setUserStats(response.data);
+    } catch (error) {
+      console.error('Error loading user stats:', error);
+    }
+  };
   
-  useEffect(() => { load(); }, []);
+  useEffect(() => { 
+    load(); 
+    loadStats(); 
+  }, []);
+
+  const handleFilterChange = (filter, courseSlug = null) => {
+    setSelectedFilter(filter);
+    setSelectedCourse(courseSlug);
+    load(filter, courseSlug);
+  };
+
+  const copyToClipboard = async (text, label) => {
+    try {
+      await navigator.clipboard.writeText(text);
+      setCopyToast(`${label} copied to clipboard!`);
+      setTimeout(() => setCopyToast(null), 2000);
+    } catch (err) {
+      console.error('Failed to copy: ', err);
+      setCopyToast('Failed to copy to clipboard');
+      setTimeout(() => setCopyToast(null), 2000);
+    }
+  };
 
   const openEdit = (u) => { 
     setEditing(u.id); 
@@ -77,6 +115,111 @@ export default function Users() {
     <div className="max-w-6xl mx-auto px-4 py-8">
       <h1 className="text-3xl font-bold text-white mb-8">User Management</h1>
       
+      {/* Category Cards */}
+      {userStats ? (
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 mb-8">
+          {/* Verified Users Card */}
+          <motion.div
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ delay: 0.1 }}
+            className={`p-6 rounded-xl border-2 cursor-pointer transition-all duration-200 ${
+              selectedFilter === 'logged-in' && !selectedCourse
+                ? 'border-bca-cyan bg-bca-cyan/10'
+                : 'border-bca-gray-700 bg-bca-gray-800 hover:border-bca-cyan/50'
+            }`}
+            onClick={() => handleFilterChange('logged-in')}
+          >
+            <div className="flex items-center justify-between">
+              <div>
+                <h3 className="text-lg font-semibold text-white">Verified Users</h3>
+                <p className="text-3xl font-bold text-bca-cyan mt-2">{userStats.loggedInUsers}</p>
+                <p className="text-bca-gray-400 text-sm mt-1">Email verified users</p>
+              </div>
+              <div className="w-12 h-12 rounded-full bg-bca-cyan/20 flex items-center justify-center">
+                <svg className="w-6 h-6 text-bca-cyan" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
+                </svg>
+              </div>
+            </div>
+          </motion.div>
+
+          {/* Course Users Cards */}
+          {userStats.courses.map((course, index) => (
+            <motion.div
+              key={course.id}
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ delay: 0.2 + index * 0.1 }}
+              className={`p-6 rounded-xl border-2 cursor-pointer transition-all duration-200 ${
+                selectedCourse === course.slug
+                  ? 'border-bca-gold bg-bca-gold/10'
+                  : 'border-bca-gray-700 bg-bca-gray-800 hover:border-bca-gold/50'
+              }`}
+              onClick={() => handleFilterChange('course', course.slug)}
+            >
+              <div className="flex items-start justify-between gap-4">
+                <div className="flex-1 min-w-0">
+                  <h3 
+                    className="text-lg font-semibold text-white leading-tight" 
+                    title={course.title}
+                    style={{
+                      display: '-webkit-box',
+                      WebkitLineClamp: 2,
+                      WebkitBoxOrient: 'vertical',
+                      overflow: 'hidden',
+                      lineHeight: '1.3',
+                      maxHeight: '2.6em',
+                      wordBreak: 'break-word'
+                    }}
+                  >
+                    {course.title}
+                  </h3>
+                  <p className="text-3xl font-bold text-bca-gold mt-2">{course.userCount}</p>
+                  <p className="text-bca-gray-400 text-sm mt-1">Enrolled users</p>
+                </div>
+                <div className="w-12 h-12 rounded-full bg-bca-gold/20 flex items-center justify-center flex-shrink-0">
+                  <svg className="w-6 h-6 text-bca-gold" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.746 0 3.332.477 4.5 1.253v13C19.832 18.477 18.246 18 16.5 18c-1.746 0-3.332.477-4.5 1.253" />
+                  </svg>
+                </div>
+              </div>
+            </motion.div>
+          ))}
+        </div>
+      ) : (
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 mb-8">
+          {[1, 2, 3].map((i) => (
+            <div key={i} className="p-6 rounded-xl border-2 border-bca-gray-700 bg-bca-gray-800 animate-pulse">
+              <div className="flex items-center justify-between">
+                <div>
+                  <div className="h-5 bg-bca-gray-700 rounded w-24 mb-2"></div>
+                  <div className="h-8 bg-bca-gray-700 rounded w-16 mb-1"></div>
+                  <div className="h-4 bg-bca-gray-700 rounded w-32"></div>
+                </div>
+                <div className="w-12 h-12 rounded-full bg-bca-gray-700"></div>
+              </div>
+            </div>
+          ))}
+        </div>
+      )}
+
+      {/* Current Filter Display */}
+      {selectedCourse && (
+        <div className="mb-6 p-4 bg-bca-gray-800 rounded-lg border border-bca-gray-700">
+          <div className="flex items-center justify-between">
+            <div>
+              <h3 className="text-lg font-semibold text-white">
+                {userStats?.courses.find(c => c.slug === selectedCourse)?.title}
+              </h3>
+              <p className="text-bca-gray-400 text-sm">
+                {list.length} user{list.length !== 1 ? 's' : ''} found
+              </p>
+            </div>
+          </div>
+        </div>
+      )}
+      
       <div className="space-y-4">
         {list.map(u => (
           <motion.div
@@ -97,10 +240,24 @@ export default function Users() {
                       {u.name.charAt(0).toUpperCase()}
                     </span>
                   </div>
-                  <div>
-                    <h3 className="text-lg font-bold text-white">{u.name}</h3>
-                    <p className="text-bca-gray-300 text-sm">{u.email}</p>
-                  </div>
+                   <div>
+                     <h3 className="text-lg font-bold text-white">{u.name}</h3>
+                     <div className="flex items-center gap-2">
+                       <p className="text-bca-gray-300 text-sm">{u.email}</p>
+                       <button
+                         onClick={(e) => {
+                           e.stopPropagation();
+                           copyToClipboard(u.email, 'Email address');
+                         }}
+                         className="text-bca-gray-400 hover:text-bca-cyan transition-colors"
+                         title="Copy email address"
+                       >
+                         <svg className="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                           <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 16H6a2 2 0 01-2-2V6a2 2 0 012-2h8a2 2 0 012 2v2m-6 12h8a2 2 0 002-2v-8a2 2 0 00-2-2h-8a2 2 0 00-2 2v8a2 2 0 002 2z" />
+                         </svg>
+                       </button>
+                     </div>
+                   </div>
                 </div>
                 
                 <div className="flex items-center gap-6">
@@ -120,7 +277,7 @@ export default function Users() {
                   </div>
                   <div className="text-center">
                     <p className="text-bca-gray-400 text-xs">Total Paid</p>
-                    <p className="text-bca-gold font-semibold">₹{((u.totalPaidCents||0)/100).toFixed(2)}</p>
+                    <p className="text-bca-gold font-semibold">₹{(u.totalPaidRupees||0).toFixed(2)}</p>
                   </div>
                   
                   <div className="flex items-center gap-2">
@@ -160,47 +317,78 @@ export default function Users() {
                     <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
                       <div>
                         <h4 className="text-sm font-semibold text-bca-gray-300 mb-2">Personal Information</h4>
-                        <div className="space-y-2 text-sm">
-                          <div className="flex justify-between">
-                            <span className="text-bca-gray-400">Date of Birth:</span>
-                            <span className="text-white">
-                              {u.dateOfBirth ? new Date(u.dateOfBirth).toLocaleDateString() : 'Not provided'}
-                            </span>
-                          </div>
-                          <div className="flex justify-between">
-                            <span className="text-bca-gray-400">Email Verified:</span>
-                            <span className={u.emailVerifiedAt ? 'text-bca-gold' : 'text-bca-red'}>
-                              {u.emailVerifiedAt ? 'Yes' : 'No'}
-                            </span>
-                          </div>
-                          <div className="flex justify-between">
-                            <span className="text-bca-gray-400">Joined:</span>
-                            <span className="text-white">
-                              {new Date(u.createdAt).toLocaleDateString()}
-                            </span>
-                          </div>
-                        </div>
+                         <div className="space-y-2 text-sm">
+                           <div className="flex justify-between items-center">
+                             <span className="text-bca-gray-400">Phone:</span>
+                             <div className="flex items-center gap-2">
+                               <span className="text-white">
+                                 {u.phone || 'Not provided'}
+                               </span>
+                               {u.phone && (
+                                 <button
+                                   onClick={(e) => {
+                                     e.stopPropagation();
+                                     copyToClipboard(u.phone, 'Phone number');
+                                   }}
+                                   className="text-bca-gray-400 hover:text-bca-cyan transition-colors"
+                                   title="Copy phone number"
+                                 >
+                                   <svg className="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 16H6a2 2 0 01-2-2V6a2 2 0 012-2h8a2 2 0 012 2v2m-6 12h8a2 2 0 002-2v-8a2 2 0 00-2-2h-8a2 2 0 00-2 2v8a2 2 0 002 2z" />
+                                   </svg>
+                                 </button>
+                               )}
+                             </div>
+                           </div>
+                           <div className="flex justify-between">
+                             <span className="text-bca-gray-400">Date of Birth:</span>
+                             <span className="text-white">
+                               {u.dateOfBirth ? new Date(u.dateOfBirth).toLocaleDateString() : 'Not provided'}
+                             </span>
+                           </div>
+                           <div className="flex justify-between">
+                             <span className="text-bca-gray-400">Email Verified:</span>
+                             <span className={u.emailVerifiedAt ? 'text-bca-gold' : 'text-bca-red'}>
+                               {u.emailVerifiedAt ? 'Yes' : 'No'}
+                             </span>
+                           </div>
+                           <div className="flex justify-between">
+                             <span className="text-bca-gray-400">Joined:</span>
+                             <span className="text-white">
+                               {new Date(u.createdAt).toLocaleDateString()}
+                             </span>
+                           </div>
+                         </div>
                       </div>
 
-                      <div>
-                        <h4 className="text-sm font-semibold text-bca-gray-300 mb-2">Account Status</h4>
-                        <div className="space-y-2 text-sm">
-                          <div className="flex justify-between">
-                            <span className="text-bca-gray-400">Status:</span>
-                            <span className={`font-semibold ${getStatusColor(u.status || 'NEW')}`}>
-                              {u.status || 'NEW'}
-                            </span>
-                          </div>
-                          <div className="flex justify-between">
-                            <span className="text-bca-gray-400">Courses Purchased:</span>
-                            <span className="text-white">{u.purchasesCount || 0}</span>
-                          </div>
-                          <div className="flex justify-between">
-                            <span className="text-bca-gray-400">Total Spent:</span>
-                            <span className="text-bca-gold font-semibold">₹{((u.totalPaidCents||0)/100).toFixed(2)}</span>
-                          </div>
-                        </div>
-                      </div>
+                       <div>
+                         <h4 className="text-sm font-semibold text-bca-gray-300 mb-2">Account Status</h4>
+                         <div className="space-y-2 text-sm">
+                           <div className="flex justify-between">
+                             <span className="text-bca-gray-400">Interest Status:</span>
+                             <span className={`font-semibold ${
+                               u.interestStatus === 'PURCHASED' ? 'text-bca-gold' :
+                               u.interestStatus === 'INTERESTED' ? 'text-bca-cyan' : 'text-bca-gray-400'
+                             }`}>
+                               {u.interestStatus || 'INTERESTED'}
+                             </span>
+                           </div>
+                           <div className="flex justify-between">
+                             <span className="text-bca-gray-400">Phone Verified:</span>
+                             <span className={u.phoneVerifiedAt ? 'text-bca-gold' : 'text-bca-red'}>
+                               {u.phoneVerifiedAt ? 'Yes' : 'No'}
+                             </span>
+                           </div>
+                           <div className="flex justify-between">
+                             <span className="text-bca-gray-400">Courses Purchased:</span>
+                             <span className="text-white">{u.purchasesCount || 0}</span>
+                           </div>
+                           <div className="flex justify-between">
+                             <span className="text-bca-gray-400">Total Spent:</span>
+                             <span className="text-bca-gold font-semibold">₹{(u.totalPaidRupees||0).toFixed(2)}</span>
+                           </div>
+                         </div>
+                       </div>
 
                       <div>
                         <h4 className="text-sm font-semibold text-bca-gray-300 mb-2">Profile</h4>
@@ -215,12 +403,63 @@ export default function Users() {
                               />
                             </div>
                           )}
-                          <div className="flex justify-between">
-                            <span className="text-bca-gray-400">User ID:</span>
-                            <span className="text-white font-mono text-xs">{u.id.slice(0, 8)}...</span>
-                          </div>
+                           <div className="flex justify-between items-center">
+                             <span className="text-bca-gray-400">User ID:</span>
+                             <div className="flex items-center gap-2">
+                               <span 
+                                 className="text-white font-mono text-xs bg-bca-gray-600 px-2 py-1 rounded break-all"
+                                 style={{ wordBreak: 'break-all', maxWidth: '200px' }}
+                               >
+                                 {u.id}
+                               </span>
+                               <button
+                                 onClick={(e) => {
+                                   e.stopPropagation();
+                                   copyToClipboard(u.id, 'User ID');
+                                 }}
+                                 className="text-bca-gray-400 hover:text-bca-cyan transition-colors"
+                                 title="Copy full User ID"
+                               >
+                                 <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 16H6a2 2 0 01-2-2V6a2 2 0 012-2h8a2 2 0 012 2v2m-6 12h8a2 2 0 002-2v-8a2 2 0 00-2-2h-8a2 2 0 00-2 2v8a2 2 0 002 2z" />
+                                 </svg>
+                               </button>
+                             </div>
+                           </div>
+                          {u.emailVerifiedAt && (
+                            <div className="flex justify-between">
+                              <span className="text-bca-gray-400">Email Verified:</span>
+                              <span className="text-white">
+                                {new Date(u.emailVerifiedAt).toLocaleDateString()}
+                              </span>
+                            </div>
+                          )}
                         </div>
                       </div>
+
+                      {/* Course Information */}
+                      {u.courses && u.courses.length > 0 && (
+                        <div className="md:col-span-2 lg:col-span-3">
+                          <h4 className="text-sm font-semibold text-bca-gray-300 mb-2">Enrolled Courses</h4>
+                          <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+                            {u.courses.map((course, index) => (
+                              <div key={index} className="p-3 bg-bca-gray-700/50 rounded-lg border border-bca-gray-600">
+                                <div className="flex items-center justify-between">
+                                  <div>
+                                    <h5 className="text-white font-medium text-sm">{course.title}</h5>
+                                    <p className="text-bca-gray-400 text-xs">
+                                      {course.type === 'monthly' ? 'Monthly Access' : 'Full Access'}
+                                    </p>
+                                  </div>
+                                  <span className="px-2 py-1 bg-bca-gold/20 text-bca-gold text-xs rounded-full">
+                                    {course.slug}
+                                  </span>
+                                </div>
+                              </div>
+                            ))}
+                          </div>
+                        </div>
+                      )}
                     </div>
                   </div>
                 </motion.div>
@@ -319,6 +558,29 @@ export default function Users() {
                 </button>
               </div>
             </motion.div>
+          </motion.div>
+        )}
+      </AnimatePresence>
+
+      {/* Toast Notification */}
+      <AnimatePresence>
+        {copyToast && (
+          <motion.div
+            initial={{ opacity: 0, y: 50, scale: 0.9 }}
+            animate={{ opacity: 1, y: 0, scale: 1 }}
+            exit={{ opacity: 0, y: 50, scale: 0.9 }}
+            className="fixed bottom-6 right-6 z-50"
+          >
+            <div className="bg-bca-gray-800 border border-bca-cyan/30 rounded-lg px-4 py-3 shadow-lg">
+              <div className="flex items-center gap-3">
+                <div className="w-5 h-5 rounded-full bg-bca-cyan/20 flex items-center justify-center">
+                  <svg className="w-3 h-3 text-bca-cyan" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
+                  </svg>
+                </div>
+                <span className="text-white text-sm font-medium">{copyToast}</span>
+              </div>
+            </div>
           </motion.div>
         )}
       </AnimatePresence>
