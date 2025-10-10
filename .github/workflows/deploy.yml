@@ -1,42 +1,195 @@
+# name: Deploy Admin Frontend to DigitalOcean
+
+# on:
+#   push:
+#     branches:
+#       - main # deploy when you push to main
+
+# jobs:
+#   deploy:
+#     runs-on: ubuntu-latest
+
+#     steps:
+#       - name: Checkout code
+#         uses: actions/checkout@v4
+
+#       - name: Setup Node.js
+#         uses: actions/setup-node@v4
+#         with:
+#           node-version: "18"
+
+#       - name: Install dependencies
+#         run: npm ci
+
+#       - name: Build admin frontend
+#         env:
+#           VITE_API_BASE: ${{ secrets.VITE_API_BASE }}
+#         run: npm run build
+
+#       - name: Copy files to DigitalOcean
+#         uses: appleboy/scp-action@v0.1.7
+#         with:
+#           host: ${{ secrets.DO_HOST }}
+#           username: ${{ secrets.DO_USER }}
+#           key: ${{ secrets.DO_KEY }}
+#           source: "dist/*"
+#           target: "~/admin-frontend"
+#           strip_components: 1
+
+#       - name: Deploy admin frontend on DigitalOcean
+#         uses: appleboy/ssh-action@v1.0.3
+#         with:
+#           host: ${{ secrets.DO_HOST }}
+#           username: ${{ secrets.DO_USER }}
+#           key: ${{ secrets.DO_KEY }}
+#           script: |
+#             echo "=== Deploying Admin Frontend ==="
+
+#             # Kill anything stuck on 80/443
+#             sudo fuser -k 80/tcp 2>/dev/null || true
+#             sudo fuser -k 443/tcp 2>/dev/null || true
+#             sudo systemctl stop nginx || true
+#             sleep 2
+
+#             # Ensure packages
+#             sudo apt-get update -y
+#             sudo apt-get install -y nginx certbot python3-certbot-nginx
+
+#             # Copy built files to web root
+#             sudo mkdir -p /var/www/admin.bengalcodingacademy.com
+#             sudo cp -r ~/admin-frontend/* /var/www/admin.bengalcodingacademy.com/
+#             sudo chown -R www-data:www-data /var/www/admin.bengalcodingacademy.com
+#             sudo chmod -R 755 /var/www/admin.bengalcodingacademy.com
+
+#             # Write clean Nginx config
+#             sudo tee /etc/nginx/sites-available/admin.bengalcodingacademy.com <<'EOL'
+#             server {
+#                 listen 80;
+#                 server_name admin.bengalcodingacademy.com;
+
+#                 root /var/www/admin.bengalcodingacademy.com;
+#                 index index.html;
+
+#                 # Security headers
+#                 add_header X-Frame-Options "SAMEORIGIN" always;
+#                 add_header X-XSS-Protection "1; mode=block" always;
+#                 add_header X-Content-Type-Options "nosniff" always;
+#                 add_header Referrer-Policy "no-referrer-when-downgrade" always;
+#                 add_header Content-Security-Policy "default-src 'self' http: https: data: blob: 'unsafe-inline' 'unsafe-eval'" always;
+
+#                 # Gzip compression
+#                 gzip on;
+#                 gzip_vary on;
+#                 gzip_min_length 1024;
+#                 gzip_proxied expired no-cache no-store private auth;
+#                 gzip_types text/plain text/css application/javascript application/json application/xml+rss image/svg+xml;
+
+#                 # Handle SPA routes
+#                 location / {
+#                     try_files \$uri /index.html;
+#                 }
+
+#                 # Cache static assets
+#                 location ~* \.(js|css|png|jpg|jpeg|gif|ico|svg|woff|woff2|ttf|eot)$ {
+#                     expires 1y;
+#                     add_header Cache-Control "public, immutable";
+#                 }
+
+#                 location ~* \.html$ {
+#                     expires 1h;
+#                     add_header Cache-Control "public";
+#                 }
+
+#                 location ~ /\. {
+#                     deny all;
+#                 }
+#             }
+#             EOL
+
+#             # Enable site and disable duplicates
+#             sudo ln -sf /etc/nginx/sites-available/admin.bengalcodingacademy.com /etc/nginx/sites-enabled/
+#             sudo rm -f /etc/nginx/sites-enabled/00-*.com || true
+
+#             # Test config before reload
+#             echo "Testing Nginx configuration..."
+#             sudo nginx -t
+
+#             # Restart Nginx
+#             echo "Restarting Nginx..."
+#             sudo systemctl restart nginx
+#             sudo systemctl enable nginx
+
+#             # SSL for admin domain
+#             sudo certbot --nginx -d admin.bengalcodingacademy.com --non-interactive --agree-tos --email admin@bengalcodingacademy.com || echo "SSL setup failed"
+
+#             echo "=== Deployment Complete ==="
+#             curl -I http://admin.bengalcodingacademy.com || true
+#             curl -I https://admin.bengalcodingacademy.com || true
+
+#       - name: Cleanup
+#         uses: appleboy/ssh-action@v1.0.3
+#         with:
+#           host: ${{ secrets.DO_HOST }}
+#           username: ${{ secrets.DO_USER }}
+#           key: ${{ secrets.DO_KEY }}
+#           script: |
+#             rm -rf ~/admin-frontend
+
+
 name: Deploy Admin Frontend to DigitalOcean
 
 on:
   push:
     branches:
-      - main # deploy when you push to main
+      - main # Deploy when pushing to main branch
 
 jobs:
   deploy:
     runs-on: ubuntu-latest
 
     steps:
+      # 1️⃣ Checkout the repository
       - name: Checkout code
         uses: actions/checkout@v4
 
+      # 2️⃣ Cache Node modules for faster builds
+      - name: Cache node modules
+        uses: actions/cache@v4
+        with:
+          path: ~/.npm
+          key: ${{ runner.os }}-node-${{ hashFiles('package-lock.json') }}
+          restore-keys: |
+            ${{ runner.os }}-node-
+
+      # 3️⃣ Setup Node.js
       - name: Setup Node.js
         uses: actions/setup-node@v4
         with:
           node-version: "18"
 
+      # 4️⃣ Install dependencies (cached)
       - name: Install dependencies
-        run: npm ci
+        run: npm ci --prefer-offline
 
+      # 5️⃣ Build the frontend
       - name: Build admin frontend
         env:
           VITE_API_BASE: ${{ secrets.VITE_API_BASE }}
         run: npm run build
 
-      - name: Copy files to DigitalOcean
-        uses: appleboy/scp-action@v0.1.7
+      # 6️⃣ Sync built files to DigitalOcean using rsync (faster than scp)
+      - name: Sync files to DigitalOcean
+        uses: burnett01/rsync-deployments@5.2
         with:
-          host: ${{ secrets.DO_HOST }}
-          username: ${{ secrets.DO_USER }}
-          key: ${{ secrets.DO_KEY }}
-          source: "dist/*"
-          target: "~/admin-frontend"
-          strip_components: 1
+          switches: -avzr --delete
+          path: dist/
+          remote_path: /var/www/admin.bengalcodingacademy.com
+          remote_host: ${{ secrets.DO_HOST }}
+          remote_user: ${{ secrets.DO_USER }}
+          remote_key: ${{ secrets.DO_KEY }}
 
-      - name: Deploy admin frontend on DigitalOcean
+      # 7️⃣ Restart Nginx and reload configuration
+      - name: Restart Nginx and finalize deploy
         uses: appleboy/ssh-action@v1.0.3
         with:
           host: ${{ secrets.DO_HOST }}
@@ -45,92 +198,71 @@ jobs:
           script: |
             echo "=== Deploying Admin Frontend ==="
 
-            # Kill anything stuck on 80/443
-            sudo fuser -k 80/tcp 2>/dev/null || true
-            sudo fuser -k 443/tcp 2>/dev/null || true
+            # Stop Nginx gracefully
             sudo systemctl stop nginx || true
             sleep 2
 
-            # Ensure packages
-            sudo apt-get update -y
-            sudo apt-get install -y nginx certbot python3-certbot-nginx
-
-            # Copy built files to web root
-            sudo mkdir -p /var/www/admin.bengalcodingacademy.com
-            sudo cp -r ~/admin-frontend/* /var/www/admin.bengalcodingacademy.com/
+            # Ensure correct permissions
             sudo chown -R www-data:www-data /var/www/admin.bengalcodingacademy.com
             sudo chmod -R 755 /var/www/admin.bengalcodingacademy.com
 
-            # Write clean Nginx config
-            sudo tee /etc/nginx/sites-available/admin.bengalcodingacademy.com <<'EOL'
-            server {
-                listen 80;
-                server_name admin.bengalcodingacademy.com;
+            # Write clean Nginx config (if missing)
+            if [ ! -f /etc/nginx/sites-available/admin.bengalcodingacademy.com ]; then
+              echo "Creating Nginx config..."
+              sudo tee /etc/nginx/sites-available/admin.bengalcodingacademy.com <<'EOL'
+              server {
+                  listen 80;
+                  server_name admin.bengalcodingacademy.com;
 
-                root /var/www/admin.bengalcodingacademy.com;
-                index index.html;
+                  root /var/www/admin.bengalcodingacademy.com;
+                  index index.html;
 
-                # Security headers
-                add_header X-Frame-Options "SAMEORIGIN" always;
-                add_header X-XSS-Protection "1; mode=block" always;
-                add_header X-Content-Type-Options "nosniff" always;
-                add_header Referrer-Policy "no-referrer-when-downgrade" always;
-                add_header Content-Security-Policy "default-src 'self' http: https: data: blob: 'unsafe-inline' 'unsafe-eval'" always;
+                  # Security headers
+                  add_header X-Frame-Options "SAMEORIGIN" always;
+                  add_header X-XSS-Protection "1; mode=block" always;
+                  add_header X-Content-Type-Options "nosniff" always;
+                  add_header Referrer-Policy "no-referrer-when-downgrade" always;
+                  add_header Content-Security-Policy "default-src 'self' http: https: data: blob: 'unsafe-inline' 'unsafe-eval'" always;
 
-                # Gzip compression
-                gzip on;
-                gzip_vary on;
-                gzip_min_length 1024;
-                gzip_proxied expired no-cache no-store private auth;
-                gzip_types text/plain text/css application/javascript application/json application/xml+rss image/svg+xml;
+                  # Gzip compression
+                  gzip on;
+                  gzip_vary on;
+                  gzip_min_length 1024;
+                  gzip_proxied expired no-cache no-store private auth;
+                  gzip_types text/plain text/css application/javascript application/json application/xml+rss image/svg+xml;
 
-                # Handle SPA routes
-                location / {
-                    try_files \$uri /index.html;
-                }
+                  # Handle SPA routes
+                  location / {
+                      try_files \$uri /index.html;
+                  }
 
-                # Cache static assets
-                location ~* \.(js|css|png|jpg|jpeg|gif|ico|svg|woff|woff2|ttf|eot)$ {
-                    expires 1y;
-                    add_header Cache-Control "public, immutable";
-                }
+                  # Cache static assets
+                  location ~* \.(js|css|png|jpg|jpeg|gif|ico|svg|woff|woff2|ttf|eot)$ {
+                      expires 1y;
+                      add_header Cache-Control "public, immutable";
+                  }
 
-                location ~* \.html$ {
-                    expires 1h;
-                    add_header Cache-Control "public";
-                }
+                  location ~* \.html$ {
+                      expires 1h;
+                      add_header Cache-Control "public";
+                  }
 
-                location ~ /\. {
-                    deny all;
-                }
-            }
-            EOL
+                  location ~ /\. {
+                      deny all;
+                  }
+              }
+              EOL
 
-            # Enable site and disable duplicates
-            sudo ln -sf /etc/nginx/sites-available/admin.bengalcodingacademy.com /etc/nginx/sites-enabled/
-            sudo rm -f /etc/nginx/sites-enabled/00-*.com || true
+              sudo ln -sf /etc/nginx/sites-available/admin.bengalcodingacademy.com /etc/nginx/sites-enabled/
+            fi
 
-            # Test config before reload
-            echo "Testing Nginx configuration..."
-            sudo nginx -t
+            # Test & reload Nginx
+            sudo nginx -t && sudo systemctl restart nginx && sudo systemctl enable nginx
 
-            # Restart Nginx
-            echo "Restarting Nginx..."
-            sudo systemctl restart nginx
-            sudo systemctl enable nginx
-
-            # SSL for admin domain
-            sudo certbot --nginx -d admin.bengalcodingacademy.com --non-interactive --agree-tos --email admin@bengalcodingacademy.com || echo "SSL setup failed"
+            # Renew SSL quietly instead of full reissue
+            sudo certbot renew --quiet || echo "SSL renew skipped"
 
             echo "=== Deployment Complete ==="
             curl -I http://admin.bengalcodingacademy.com || true
             curl -I https://admin.bengalcodingacademy.com || true
 
-      - name: Cleanup
-        uses: appleboy/ssh-action@v1.0.3
-        with:
-          host: ${{ secrets.DO_HOST }}
-          username: ${{ secrets.DO_USER }}
-          key: ${{ secrets.DO_KEY }}
-          script: |
-            rm -rf ~/admin-frontend
