@@ -1455,44 +1455,7 @@ export default function Courses() {
                     </div>
                   </div>
 
-                  {/* Coupon Key-Value Pairs */}
-                  <div className="mb-6">
-                    <h3 className="text-lg font-semibold text-white mb-4">Coupon Key-Value Pairs</h3>
-                    <div className="space-y-3">
-                      {form.coupons.map((coupon, index) => (
-                        <div key={index} className="flex gap-2">
-                          <input
-                            type="text"
-                            placeholder="Coupon Key"
-                            className="flex-1 px-3 py-2 rounded-lg bg-bca-gray-700 border border-bca-gray-600 text-white focus:outline-none focus:border-bca-gold"
-                            value={coupon.code}
-                            onChange={e => updateCoupon(index, 'code', e.target.value)}
-                          />
-                          <input
-                            type="number"
-                            placeholder="Value"
-                            min="1"
-                            max="100"
-                            className="w-24 px-3 py-2 rounded-lg bg-bca-gray-700 border border-bca-gray-600 text-white focus:outline-none focus:border-bca-gold"
-                            value={coupon.discountPercent}
-                            onChange={e => updateCoupon(index, 'discountPercent', parseInt(e.target.value) || 0)}
-                          />
-                          <button
-                            onClick={() => removeCoupon(index)}
-                            className="px-3 py-2 bg-bca-red/20 text-bca-red rounded-lg hover:bg-bca-red/30 transition-colors"
-                          >
-                            ×
-                          </button>
-                        </div>
-                      ))}
-                      <button
-                        onClick={addCoupon}
-                        className="w-full px-4 py-2 bg-bca-gold/20 text-bca-gold rounded-lg hover:bg-bca-gold/30 transition-colors"
-                      >
-                        + Add Coupon
-                      </button>
-                    </div>
-                  </div>
+                  {/* Coupons are managed from the dedicated Coupons page */}
 
                   {/* Create Course Button */}
                   <button 
