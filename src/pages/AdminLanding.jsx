@@ -57,6 +57,17 @@ export default function AdminLanding() {
       color: 'gold'
     },
     {
+      to: '/coupons',
+      title: 'Coupons',
+      description: 'Create, edit, activate/disable coupons and set usage limits.',
+      icon: (
+        <svg className="w-6 h-6 text-bca-gold" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M7 7h10v10H7zM3 9h2m14 0h2M3 15h2m14 0h2" />
+        </svg>
+      ),
+      color: 'gold'
+    },
+    {
       to: '/course-content',
       title: 'Upload Video & Notes',
       description: 'Manage course content including videos, GitHub repos, and notes for each month.',

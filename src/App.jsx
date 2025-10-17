@@ -20,6 +20,7 @@ import DML from "./pages/DML";
 import QuizExam from "./pages/QuizExam";
 import QuizAnalytics from "./pages/QuizAnalytics";
 import PurchaseNotifications from "./pages/PurchaseNotifications";
+import Coupons from "./pages/Coupons";
 
 function Protected({ children }) {
   const { user, loading } = useAuth();
@@ -74,6 +75,7 @@ export default function App() {
                   <Route path="quiz-exams" element={<QuizExam />} />
                   <Route path="quiz-analytics" element={<QuizAnalytics />} />
                   <Route path="purchase-notifications" element={<PurchaseNotifications />} />
+                  <Route path="coupons" element={<Coupons />} />
                   <Route path="*" element={<Navigate to="/" />} />
                 </Routes>
               </Layout>
