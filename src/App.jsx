@@ -45,7 +45,6 @@ function Protected({ children }) {
 export default function App() {
   const navigate = useNavigate();
 
-
   return (
     <AuthProvider navigate={navigate}>
       <Routes>
@@ -58,23 +57,44 @@ export default function App() {
                 <Routes>
                   <Route path="/" element={<AdminLanding />} />
                   <Route path="courses" element={<Courses />} />
-                  <Route path="course-content" element={<CourseContentList />} />
-                  <Route path="course-content/:courseId" element={<CourseContentManager />} />
+                  <Route
+                    path="course-content"
+                    element={<CourseContentList />}
+                  />
+                  <Route
+                    path="course-content/:courseId"
+                    element={<CourseContentManager />}
+                  />
                   <Route path="webinars" element={<Webinars />} />
                   <Route path="announcements" element={<Announcements />} />
-                    <Route path="sales" element={<Sales />} />
-                    <Route path="payment-details/:year" element={<PaymentDetails />} />
-                    <Route path="payment-details/:year/:month" element={<PaymentDetails />} />
-                    <Route path="payment-details/:year/:month/:day" element={<PaymentDetails />} />
-                    <Route path="users" element={<Users />} />
+                  <Route path="sales" element={<Sales />} />
+                  <Route
+                    path="payment-details/:year"
+                    element={<PaymentDetails />}
+                  />
+                  <Route
+                    path="payment-details/:year/:month"
+                    element={<PaymentDetails />}
+                  />
+                  <Route
+                    path="payment-details/:year/:month/:day"
+                    element={<PaymentDetails />}
+                  />
+                  <Route path="users" element={<Users />} />
                   <Route path="testimonials" element={<Testimonials />} />
                   <Route path="youtube-videos" element={<YouTubeVideos />} />
-                  <Route path="meeting-requests" element={<MeetingRequests />} />
+                  <Route
+                    path="meeting-requests"
+                    element={<MeetingRequests />}
+                  />
                   <Route path="unique-visitors" element={<UniqueVisitors />} />
                   <Route path="dml" element={<DML />} />
                   <Route path="quiz-exams" element={<QuizExam />} />
                   <Route path="quiz-analytics" element={<QuizAnalytics />} />
-                  <Route path="purchase-notifications" element={<PurchaseNotifications />} />
+                  <Route
+                    path="purchase-notifications"
+                    element={<PurchaseNotifications />}
+                  />
                   <Route path="coupons" element={<Coupons />} />
                   <Route path="*" element={<Navigate to="/" />} />
                 </Routes>
